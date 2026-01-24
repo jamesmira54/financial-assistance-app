@@ -864,8 +864,8 @@ INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`
 (863, '012914035', 'Bantay Abot', '01', '0129', '012914'),
 (864, '012915001', 'Banoen', '01', '0129', '012915'),
 (865, '012915002', 'Cayus', '01', '0129', '012915'),
-(866, '012915003', 'Patungcaleo (Lamag)', '01', '0129', '012915');
-INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`, `citymun_code`) VALUES
+(866, '012915003', 'Patungcaleo (Lamag)', '01', '0129', '012915'),
+
 (867, '012915004', 'Malideg', '01', '0129', '012915'),
 (868, '012915005', 'Namitpit', '01', '0129', '012915'),
 (869, '012915006', 'Patiacan', '01', '0129', '012915'),
@@ -1744,8 +1744,8 @@ INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`
 (1742, '013314026', 'Dalumpinas Oeste', '01', '0133', '013314'),
 (1743, '013314027', 'Ilocanos Norte', '01', '0133', '013314'),
 (1744, '013314028', 'Ilocanos Sur', '01', '0133', '013314'),
-(1745, '013314029', 'Langcuas', '01', '0133', '013314');
-INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`, `citymun_code`) VALUES
+(1745, '013314029', 'Langcuas', '01', '0133', '013314'),
+
 (1746, '013314030', 'Lingsat', '01', '0133', '013314'),
 (1747, '013314031', 'Madayegdeg', '01', '0133', '013314'),
 (1748, '013314032', 'Mameltac', '01', '0133', '013314'),
@@ -2640,8 +2640,8 @@ INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`
 (2637, '015527052', 'Naguilayan East', '01', '0155', '015527'),
 (2638, '015527053', 'Naguilayan West', '01', '0155', '015527'),
 (2639, '015527054', 'Nancasalan', '01', '0155', '015527'),
-(2640, '015527055', 'Niog-Cabison-Bulaney', '01', '0155', '015527');
-INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`, `citymun_code`) VALUES
+(2640, '015527055', 'Niog-Cabison-Bulaney', '01', '0155', '015527'),
+
 (2641, '015527056', 'Olegario-Caoile (Pob.)', '01', '0155', '015527'),
 (2642, '015527057', 'Olo Cacamposan', '01', '0155', '015527'),
 (2643, '015527058', 'Olo Cafabrosan', '01', '0155', '015527'),
@@ -3519,8 +3519,8 @@ INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`
 (3515, '021507013', 'Mabuttal West', '02', '0215', '021507'),
 (3516, '021507014', 'Nararagan', '02', '0215', '021507'),
 (3517, '021507015', 'Palloc', '02', '0215', '021507'),
-(3518, '021507017', 'Payagan East', '02', '0215', '021507');
-INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`, `citymun_code`) VALUES
+(3518, '021507017', 'Payagan East', '02', '0215', '021507'),
+
 (3519, '021507018', 'Payagan West', '02', '0215', '021507'),
 (3520, '021507019', 'San Juan', '02', '0215', '021507'),
 (3521, '021507020', 'Santa Cruz', '02', '0215', '021507'),
@@ -4394,8 +4394,8 @@ INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`
 (4389, '023108066', 'Sillawit', '02', '0231', '023108'),
 (4390, '023108067', 'Sinippil', '02', '0231', '023108'),
 (4391, '023108069', 'Tagaran', '02', '0231', '023108'),
-(4392, '023108070', 'Turayong', '02', '0231', '023108');
-INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`, `citymun_code`) VALUES
+(4392, '023108070', 'Turayong', '02', '0231', '023108'),
+
 (4393, '023108071', 'Union', '02', '0231', '023108'),
 (4394, '023108072', 'Villa Concepcion', '02', '0231', '023108'),
 (4395, '023108073', 'Villa Luna', '02', '0231', '023108'),
@@ -5260,8 +5260,8 @@ INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`
 (5254, '025005015', 'Don Tomas Maddela Pob. (District II)', '02', '0250', '025005'),
 (5255, '025005016', 'District III Pob. (Don M. Perez)', '02', '0250', '025005'),
 (5256, '025005017', 'District IV (Pob.)', '02', '0250', '025005'),
-(5257, '025005019', 'Bansing', '02', '0250', '025005');
-INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`, `citymun_code`) VALUES
+(5257, '025005019', 'Bansing', '02', '0250', '025005'),
+
 (5258, '025005020', 'Cabuaan', '02', '0250', '025005'),
 (5259, '025005021', 'Don Mariano Marcos', '02', '0250', '025005'),
 (5260, '025005022', 'Ipil-Cuneg', '02', '0250', '025005'),
@@ -6144,8 +6144,8 @@ INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`
 (6137, '031417003', 'Banga I', '03', '0314', '031417'),
 (6138, '031417004', 'Banga II', '03', '0314', '031417'),
 (6139, '031417005', 'Bintog', '03', '0314', '031417'),
-(6140, '031417006', 'Bulihan', '03', '0314', '031417');
-INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`, `citymun_code`) VALUES
+(6140, '031417006', 'Bulihan', '03', '0314', '031417'),
+
 (6141, '031417007', 'Culianin', '03', '0314', '031417'),
 (6142, '031417008', 'Dampol', '03', '0314', '031417'),
 (6143, '031417010', 'Lagundi', '03', '0314', '031417'),
@@ -7008,8 +7008,8 @@ INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`
 (7000, '034924004', 'Lawang Kupang', '03', '0349', '034924'),
 (7001, '034924005', 'Luyos', '03', '0349', '034924'),
 (7002, '034924006', 'Maugat', '03', '0349', '034924'),
-(7003, '034924007', 'Panabingan', '03', '0349', '034924');
-INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`, `citymun_code`) VALUES
+(7003, '034924007', 'Panabingan', '03', '0349', '034924'),
+
 (7004, '034924008', 'Papaya', '03', '0349', '034924'),
 (7005, '034924009', 'Poblacion', '03', '0349', '034924'),
 (7006, '034924011', 'San Francisco', '03', '0349', '034924'),
@@ -7875,8 +7875,8 @@ INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`
 (7866, '036904003', 'Cubcub (Pob.)', '03', '0369', '036904'),
 (7867, '036904004', 'Cutcut 1st', '03', '0369', '036904'),
 (7868, '036904005', 'Cutcut 2nd', '03', '0369', '036904'),
-(7869, '036904007', 'Dolores', '03', '0369', '036904');
-INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`, `citymun_code`) VALUES
+(7869, '036904007', 'Dolores', '03', '0369', '036904'),
+
 (7870, '036904008', 'Estrada (Calingcuan)', '03', '0369', '036904'),
 (7871, '036904009', 'Lawy', '03', '0369', '036904'),
 (7872, '036904010', 'Manga', '03', '0369', '036904'),
@@ -8752,8 +8752,8 @@ INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`
 (8742, '041003026', 'Duhatan', '04', '0410', '041003'),
 (8743, '041003027', 'Durungao', '04', '0410', '041003'),
 (8744, '041003028', 'Gimalas', '04', '0410', '041003'),
-(8745, '041003029', 'Gumamela', '04', '0410', '041003');
-INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`, `citymun_code`) VALUES
+(8745, '041003029', 'Gumamela', '04', '0410', '041003'),
+
 (8746, '041003030', 'Lagnas', '04', '0410', '041003'),
 (8747, '041003031', 'Lanatan', '04', '0410', '041003'),
 (8748, '041003032', 'Langgangan', '04', '0410', '041003'),
@@ -9623,8 +9623,8 @@ INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`
 (9612, '041029024', 'Poblacion 10', '04', '0410', '041029'),
 (9613, '041029025', 'Poblacion 12', '04', '0410', '041029'),
 (9614, '041029026', 'Poblacion 2', '04', '0410', '041029'),
-(9615, '041029027', 'Poblacion 3', '04', '0410', '041029');
-INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`, `citymun_code`) VALUES
+(9615, '041029027', 'Poblacion 3', '04', '0410', '041029'),
+
 (9616, '041029028', 'Poblacion 4', '04', '0410', '041029'),
 (9617, '041029029', 'Poblacion 5', '04', '0410', '041029'),
 (9618, '041029030', 'Poblacion 6', '04', '0410', '041029'),
@@ -10449,8 +10449,8 @@ INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`
 (10437, '042118044', 'Santol', '04', '0421', '042118'),
 (10438, '042118045', 'Tartaria', '04', '0421', '042118'),
 (10439, '042118046', 'Tibig', '04', '0421', '042118'),
-(10440, '042118047', 'Tubuan I', '04', '0421', '042118');
-INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`, `citymun_code`) VALUES
+(10440, '042118047', 'Tubuan I', '04', '0421', '042118'),
+
 (10441, '042118048', 'Ulat', '04', '0421', '042118'),
 (10442, '042118049', 'Acacia', '04', '0421', '042118'),
 (10443, '042118050', 'Anahaw I', '04', '0421', '042118'),
@@ -11294,8 +11294,8 @@ INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`
 (11281, '045602010', 'Barangay 1 (Pob.)', '04', '0456', '045602'),
 (11282, '045602011', 'Barangay 2 (Pob.)', '04', '0456', '045602'),
 (11283, '045602012', 'Barangay 3 (Pob.)', '04', '0456', '045602'),
-(11284, '045602013', 'Barangay 4 (Pob.)', '04', '0456', '045602');
-INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`, `citymun_code`) VALUES
+(11284, '045602013', 'Barangay 4 (Pob.)', '04', '0456', '045602'),
+
 (11285, '045602014', 'Barangay 5 (Pob.)', '04', '0456', '045602'),
 (11286, '045602015', 'Villa Esperanza', '04', '0456', '045602'),
 (11287, '045602016', 'Villa Jesus Este', '04', '0456', '045602'),
@@ -12142,8 +12142,8 @@ INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`
 (12128, '045634039', 'Sumag Norte', '04', '0456', '045634'),
 (12129, '045634040', 'Sumag Weste', '04', '0456', '045634'),
 (12130, '045635002', 'Concepcion', '04', '0456', '045635'),
-(12131, '045635003', 'Duhat', '04', '0456', '045635');
-INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`, `citymun_code`) VALUES
+(12131, '045635003', 'Duhat', '04', '0456', '045635'),
+
 (12132, '045635004', 'Ilaya', '04', '0456', '045635'),
 (12133, '045635005', 'Ilosong', '04', '0456', '045635'),
 (12134, '045635007', 'Tanauan', '04', '0456', '045635'),
@@ -13003,8 +13003,8 @@ INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`
 (12988, '175107012', 'Tubili', '17', '1751', '175107'),
 (12989, '175108001', 'Adela', '17', '1751', '175108'),
 (12990, '175108002', 'Aguas', '17', '1751', '175108'),
-(12991, '175108003', 'Magsikap', '17', '1751', '175108');
-INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`, `citymun_code`) VALUES
+(12991, '175108003', 'Magsikap', '17', '1751', '175108'),
+
 (12992, '175108004', 'Malawaan', '17', '1751', '175108'),
 (12993, '175108005', 'Pitogo', '17', '1751', '175108'),
 (12994, '175108006', 'Rizal', '17', '1751', '175108'),
@@ -13865,8 +13865,8 @@ INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`
 (13849, '175318030', 'Barangay III (Pob.)', '17', '1753', '175318'),
 (13850, '175318031', 'Barangay IV (Pob.)', '17', '1753', '175318'),
 (13851, '175318032', 'Barangay V Pob. (Porao Island)', '17', '1753', '175318'),
-(13852, '175318033', 'Barangay VI Pob. (Johnson Island)', '17', '1753', '175318');
-INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`, `citymun_code`) VALUES
+(13852, '175318033', 'Barangay VI Pob. (Johnson Island)', '17', '1753', '175318'),
+
 (13853, '175318034', 'Nicanor Zabala', '17', '1753', '175318'),
 (13854, '175319001', 'Alimanguan', '17', '1753', '175319'),
 (13855, '175319002', 'Binga', '17', '1753', '175319'),
@@ -14718,8 +14718,8 @@ INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`
 (14701, '050514006', 'Apad', '05', '0505', '050514'),
 (14702, '050514007', 'Balaba', '05', '0505', '050514'),
 (14703, '050514008', 'Balangibang', '05', '0505', '050514'),
-(14704, '050514009', 'Balinad', '05', '0505', '050514');
-INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`, `citymun_code`) VALUES
+(14704, '050514009', 'Balinad', '05', '0505', '050514'),
+
 (14705, '050514010', 'Basud', '05', '0505', '050514'),
 (14706, '050514011', 'Binagbangan (Pintor)', '05', '0505', '050514'),
 (14707, '050514012', 'Buyo', '05', '0505', '050514'),
@@ -15571,8 +15571,8 @@ INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`
 (15553, '051716004', 'Francia', '05', '0517', '051716'),
 (15554, '051716005', 'La Anunciacion', '05', '0517', '051716'),
 (15555, '051716006', 'La Medalla', '05', '0517', '051716'),
-(15556, '051716007', 'La Purisima', '05', '0517', '051716');
-INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`, `citymun_code`) VALUES
+(15556, '051716007', 'La Purisima', '05', '0517', '051716'),
+
 (15557, '051716008', 'La Trinidad', '05', '0517', '051716'),
 (15558, '051716009', 'Niño Jesus', '05', '0517', '051716'),
 (15559, '051716010', 'Perpetual Help', '05', '0517', '051716'),
@@ -16426,8 +16426,8 @@ INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`
 (16407, '052008035', 'Timbaan', '05', '0520', '052008'),
 (16408, '052008036', 'Tominawog', '05', '0520', '052008'),
 (16409, '052008037', 'Wagdas (Pob.)', '05', '0520', '052008'),
-(16410, '052008038', 'Yocti', '05', '0520', '052008');
-INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`, `citymun_code`) VALUES
+(16410, '052008038', 'Yocti', '05', '0520', '052008'),
+
 (16411, '052009001', 'Balatohan', '05', '0520', '052009'),
 (16412, '052009002', 'Salvacion (Patagan)', '05', '0520', '052009'),
 (16413, '052009003', 'Boton', '05', '0520', '052009'),
@@ -17296,8 +17296,8 @@ INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`
 (17276, '056207027', 'Orange', '05', '0562', '056207'),
 (17277, '056207028', 'Pangpang', '05', '0562', '056207'),
 (17278, '056207029', 'Parina', '05', '0562', '056207'),
-(17279, '056207030', 'Pawala', '05', '0562', '056207');
-INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`, `citymun_code`) VALUES
+(17279, '056207030', 'Pawala', '05', '0562', '056207'),
+
 (17280, '056207031', 'Pinamanaan', '05', '0562', '056207'),
 (17281, '056207032', 'Poso Pob. (Barangay 5)', '05', '0562', '056207'),
 (17282, '056207033', 'Punta Waling-Waling Pob. (Barangay 4)', '05', '0562', '056207'),
@@ -18176,8 +18176,8 @@ INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`
 (18155, '060607047', 'Villaflor', '06', '0606', '060607'),
 (18156, '060607048', 'Ysulat', '06', '0606', '060607'),
 (18157, '060607049', 'Igcadac', '06', '0606', '060607'),
-(18158, '060607050', 'Lindero', '06', '0606', '060607');
-INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`, `citymun_code`) VALUES
+(18158, '060607050', 'Lindero', '06', '0606', '060607'),
+
 (18159, '060608001', 'Apdo', '06', '0606', '060608'),
 (18160, '060608002', 'Asluman', '06', '0606', '060608'),
 (18161, '060608003', 'Banawon', '06', '0606', '060608'),
@@ -19052,8 +19052,8 @@ INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`
 (19030, '063001021', 'Pinay Espinosa', '06', '0630', '063001'),
 (19031, '063001022', 'Poblacion', '06', '0630', '063001'),
 (19032, '063001023', 'Progreso', '06', '0630', '063001'),
-(19033, '063001024', 'Puente Bunglas', '06', '0630', '063001');
-INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`, `citymun_code`) VALUES
+(19033, '063001024', 'Puente Bunglas', '06', '0630', '063001'),
+
 (19034, '063001025', 'Punta Buri', '06', '0630', '063001'),
 (19035, '063001026', 'Rojas', '06', '0630', '063001'),
 (19036, '063001027', 'San Antonio', '06', '0630', '063001'),
@@ -19913,8 +19913,8 @@ INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`
 (19890, '063023016', 'Carigangan', '06', '0630', '063023'),
 (19891, '063023017', 'Cunsad', '06', '0630', '063023'),
 (19892, '063023018', 'Dabong', '06', '0630', '063023'),
-(19893, '063023019', 'Damires', '06', '0630', '063023');
-INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`, `citymun_code`) VALUES
+(19893, '063023019', 'Damires', '06', '0630', '063023'),
+
 (19894, '063023020', 'Damo-ong', '06', '0630', '063023'),
 (19895, '063023021', 'Danao', '06', '0630', '063023'),
 (19896, '063023022', 'Gines', '06', '0630', '063023'),
@@ -20781,8 +20781,8 @@ INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`
 (20757, '063044013', 'Bakabak', '06', '0630', '063044'),
 (20758, '063044014', 'Batitao', '06', '0630', '063044'),
 (20759, '063044015', 'Bato', '06', '0630', '063044'),
-(20760, '063044016', 'Del Castillo', '06', '0630', '063044');
-INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`, `citymun_code`) VALUES
+(20760, '063044016', 'Del Castillo', '06', '0630', '063044'),
+
 (20761, '063044017', 'Castor', '06', '0630', '063044'),
 (20762, '063044018', 'Crespo', '06', '0630', '063044'),
 (20763, '063044020', 'Devera', '06', '0630', '063044'),
@@ -21635,8 +21635,8 @@ INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`
 (21610, '067902005', 'Balcon Maravilla', '06', '0679', '067902'),
 (21611, '067902006', 'Balcon Melliza', '06', '0679', '067902'),
 (21612, '067902008', 'Bugnay', '06', '0679', '067902'),
-(21613, '067902009', 'Buluangan', '06', '0679', '067902');
-INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`, `citymun_code`) VALUES
+(21613, '067902009', 'Buluangan', '06', '0679', '067902'),
+
 (21614, '067902013', 'Espinosa', '06', '0679', '067902'),
 (21615, '067902014', 'Hoskyn', '06', '0679', '067902'),
 (21616, '067902017', 'Lawi', '06', '0679', '067902'),
@@ -22514,8 +22514,8 @@ INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`
 (22488, '071235020', 'Tugas', '07', '0712', '071235'),
 (22489, '071235021', 'Tugnao', '07', '0712', '071235'),
 (22490, '071235022', 'Villa Milagrosa', '07', '0712', '071235'),
-(22491, '071235023', 'Butan', '07', '0712', '071235');
-INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`, `citymun_code`) VALUES
+(22491, '071235023', 'Butan', '07', '0712', '071235'),
+
 (22492, '071235024', 'San Vicente', '07', '0712', '071235'),
 (22493, '071236001', 'Calangahan', '07', '0712', '071236'),
 (22494, '071236002', 'Canmano', '07', '0712', '071236'),
@@ -23395,8 +23395,8 @@ INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`
 (23368, '072224012', 'Candabong', '07', '0722', '072224'),
 (23369, '072224013', 'Kang-actol', '07', '0722', '072224'),
 (23370, '072224014', 'Kanghalo', '07', '0722', '072224'),
-(23371, '072224015', 'Kanghumaod', '07', '0722', '072224');
-INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`, `citymun_code`) VALUES
+(23371, '072224015', 'Kanghumaod', '07', '0722', '072224'),
+
 (23372, '072224016', 'Kanguha', '07', '0722', '072224'),
 (23373, '072224017', 'Kantangkas', '07', '0722', '072224'),
 (23374, '072224018', 'Kanyuko', '07', '0722', '072224'),
@@ -24280,8 +24280,8 @@ INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`
 (24252, '074612023', 'North Poblacion', '07', '0746', '074612'),
 (24253, '074612024', 'South Poblacion', '07', '0746', '074612'),
 (24254, '074612025', 'Polopantao', '07', '0746', '074612'),
-(24255, '074612026', 'Sampiniton', '07', '0746', '074612');
-INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`, `citymun_code`) VALUES
+(24255, '074612026', 'Sampiniton', '07', '0746', '074612'),
+
 (24256, '074612027', 'Talamban', '07', '0746', '074612'),
 (24257, '074612028', 'Tamao', '07', '0746', '074612'),
 (24258, '074613001', 'Aniniaw', '07', '0746', '074613'),
@@ -25146,8 +25146,8 @@ INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`
 (25117, '082617031', 'Paypayon (Pob.)', '08', '0826', '082617'),
 (25118, '082617033', 'Riverside (Pob.)', '08', '0826', '082617'),
 (25119, '082617034', 'Rizal', '08', '0826', '082617'),
-(25120, '082617035', 'Sabang', '08', '0826', '082617');
-INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`, `citymun_code`) VALUES
+(25120, '082617035', 'Sabang', '08', '0826', '082617'),
+
 (25121, '082617036', 'San Eduardo', '08', '0826', '082617'),
 (25122, '082617037', 'Santa Monica', '08', '0826', '082617'),
 (25123, '082617038', 'Saugan', '08', '0826', '082617'),
@@ -26006,8 +26006,8 @@ INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`
 (25976, '083721006', 'Conalum', '08', '0837', '083721'),
 (25977, '083721007', 'De los Santos (Mahilum)', '08', '0837', '083721'),
 (25978, '083721008', 'Esperanza', '08', '0837', '083721'),
-(25979, '083721009', 'Guadalupe', '08', '0837', '083721');
-INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`, `citymun_code`) VALUES
+(25979, '083721009', 'Guadalupe', '08', '0837', '083721'),
+
 (25980, '083721010', 'Guinsanga-an', '08', '0837', '083721'),
 (25981, '083721011', 'Hinabay', '08', '0837', '083721'),
 (25982, '083721012', 'Jubasan', '08', '0837', '083721'),
@@ -26861,8 +26861,8 @@ INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`
 (26830, '083748032', 'Magay', '08', '0837', '083748'),
 (26831, '083748033', 'Maghulod', '08', '0837', '083748'),
 (26832, '083748034', 'Malaguicay', '08', '0837', '083748'),
-(26833, '083748035', 'Maribi', '08', '0837', '083748');
-INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`, `citymun_code`) VALUES
+(26833, '083748035', 'Maribi', '08', '0837', '083748'),
+
 (26834, '083748036', 'Mohon', '08', '0837', '083748'),
 (26835, '083748037', 'Pago', '08', '0837', '083748'),
 (26836, '083748038', 'Pasil', '08', '0837', '083748'),
@@ -27722,8 +27722,8 @@ INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`
 (27690, '086003149', 'Tigbe', '08', '0860', '086003'),
 (27691, '086003152', 'Tinaplacan', '08', '0860', '086003'),
 (27692, '086003153', 'Tomaliguez', '08', '0860', '086003'),
-(27693, '086003154', 'Trinidad (Sabang)', '08', '0860', '086003');
-INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`, `citymun_code`) VALUES
+(27693, '086003154', 'Trinidad (Sabang)', '08', '0860', '086003'),
+
 (27694, '086003155', 'Victory', '08', '0860', '086003'),
 (27695, '086003156', 'Villahermosa', '08', '0860', '086003'),
 (27696, '086003158', 'Awang East (Pob.)', '08', '0860', '086003'),
@@ -28594,8 +28594,8 @@ INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`
 (28561, '086406005', 'Calian', '08', '0864', '086406'),
 (28562, '086406006', 'Caligangan', '08', '0864', '086406'),
 (28563, '086406007', 'Candayuman', '08', '0864', '086406'),
-(28564, '086406008', 'Estela', '08', '0864', '086406');
-INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`, `citymun_code`) VALUES
+(28564, '086406008', 'Estela', '08', '0864', '086406'),
+
 (28565, '086406009', 'Gud-an', '08', '0864', '086406'),
 (28566, '086406010', 'Guintoylan', '08', '0864', '086406'),
 (28567, '086406011', 'Himayangan', '08', '0864', '086406'),
@@ -29470,8 +29470,8 @@ INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`
 (29436, '097214037', 'Tinindugan', '09', '0972', '097214'),
 (29437, '097214038', 'Tuburan', '09', '0972', '097214'),
 (29438, '097214039', 'Venus', '09', '0972', '097214'),
-(29439, '097214040', 'Wilben', '09', '0972', '097214');
-INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`, `citymun_code`) VALUES
+(29439, '097214040', 'Wilben', '09', '0972', '097214'),
+
 (29440, '097215001', 'Balok', '09', '0972', '097215'),
 (29441, '097215003', 'Datagan', '09', '0972', '097215'),
 (29442, '097215004', 'Denoyan', '09', '0972', '097215'),
@@ -30349,8 +30349,8 @@ INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`
 (30314, '097330016', 'Navalan', '09', '0973', '097330'),
 (30315, '097330019', 'Panduma Senior', '09', '0973', '097330'),
 (30316, '097330020', 'Sambulawan', '09', '0973', '097330'),
-(30317, '097330021', 'San Antonio', '09', '0973', '097330');
-INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`, `citymun_code`) VALUES
+(30317, '097330021', 'San Antonio', '09', '0973', '097330'),
+
 (30318, '097330022', 'San Carlos (Pob.)', '09', '0973', '097330'),
 (30319, '097330023', 'Santo Niño (Pob.)', '09', '0973', '097330'),
 (30320, '097330024', 'Santo Rosario', '09', '0973', '097330'),
@@ -31222,8 +31222,8 @@ INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`
 (31186, '101312021', 'Kabalabag', '10', '1013', '101312'),
 (31187, '101312022', 'Kulaman', '10', '1013', '101312'),
 (31188, '101312023', 'Laguitas', '10', '1013', '101312'),
-(31189, '101312025', 'Patpat (Lapu-lapu)', '10', '1013', '101312');
-INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`, `citymun_code`) VALUES
+(31189, '101312025', 'Patpat (Lapu-lapu)', '10', '1013', '101312'),
+
 (31190, '101312026', 'Linabo', '10', '1013', '101312'),
 (31191, '101312027', 'Apo Macote', '10', '1013', '101312'),
 (31192, '101312028', 'Miglamin', '10', '1013', '101312'),
@@ -32100,8 +32100,8 @@ INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`
 (32063, '104203017', 'Mapurog (Migsale)', '10', '1042', '104203'),
 (32064, '104203019', 'Migpange', '10', '1042', '104203'),
 (32065, '104203020', 'Montol', '10', '1042', '104203'),
-(32066, '104203023', 'Pisa-an', '10', '1042', '104203');
-INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`, `citymun_code`) VALUES
+(32066, '104203023', 'Pisa-an', '10', '1042', '104203'),
+
 (32067, '104203024', 'Poblacion (Centro)', '10', '1042', '104203'),
 (32068, '104203025', 'Remedios', '10', '1042', '104203'),
 (32069, '104203026', 'Rufino Lumapas', '10', '1042', '104203'),
@@ -32963,8 +32963,8 @@ INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`
 (32925, '104322003', 'Bunal', '10', '1043', '104322'),
 (32926, '104322004', 'Dinagsaan', '10', '1043', '104322'),
 (32927, '104322005', 'Guinalaban', '10', '1043', '104322'),
-(32928, '104322006', 'Ili-ilihon', '10', '1043', '104322');
-INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`, `citymun_code`) VALUES
+(32928, '104322006', 'Ili-ilihon', '10', '1043', '104322'),
+
 (32929, '104322007', 'Inobulan', '10', '1043', '104322'),
 (32930, '104322008', 'Looc', '10', '1043', '104322'),
 (32931, '104322009', 'Matampa', '10', '1043', '104322'),
@@ -33831,8 +33831,8 @@ INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`
 (33792, '112510010', 'Manikling', '11', '1125', '112510'),
 (33793, '112510011', 'Maputi', '11', '1125', '112510'),
 (33794, '112510012', 'Batobato (Pob.)', '11', '1125', '112510'),
-(33795, '112510013', 'San Miguel', '11', '1125', '112510');
-INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`, `citymun_code`) VALUES
+(33795, '112510013', 'San Miguel', '11', '1125', '112510'),
+
 (33796, '112510014', 'San Roque', '11', '1125', '112510'),
 (33797, '112510015', 'Santo Rosario', '11', '1125', '112510'),
 (33798, '112510016', 'Sudlon', '11', '1125', '112510'),
@@ -34711,8 +34711,8 @@ INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`
 (34671, '124718005', 'Dallag', '12', '1247', '124718'),
 (34672, '124718006', 'Datu Ladayon', '12', '1247', '124718'),
 (34673, '124718007', 'Datu Matangkil', '12', '1247', '124718'),
-(34674, '124718008', 'Doroluman', '12', '1247', '124718');
-INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`, `citymun_code`) VALUES
+(34674, '124718008', 'Doroluman', '12', '1247', '124718'),
+
 (34675, '124718009', 'Gambodes', '12', '1247', '124718'),
 (34676, '124718010', 'Ganatan', '12', '1247', '124718'),
 (34677, '124718011', 'Greenfield', '12', '1247', '124718'),
@@ -35578,8 +35578,8 @@ INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`
 (35537, '133901200', 'Barangay 200', '13', '1339', '133901'),
 (35538, '133901201', 'Barangay 201', '13', '1339', '133901'),
 (35539, '133901202', 'Barangay 202', '13', '1339', '133901'),
-(35540, '133901203', 'Barangay 202-A', '13', '1339', '133901');
-INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`, `citymun_code`) VALUES
+(35540, '133901203', 'Barangay 202-A', '13', '1339', '133901'),
+
 (35541, '133901204', 'Barangay 203', '13', '1339', '133901'),
 (35542, '133901205', 'Barangay 204', '13', '1339', '133901'),
 (35543, '133901206', 'Barangay 205', '13', '1339', '133901'),
@@ -36413,8 +36413,8 @@ INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`
 (36371, '137404055', 'Loyola Heights', '13', '1374', '137404'),
 (36372, '137404056', 'Maharlika', '13', '1374', '137404'),
 (36373, '137404057', 'Malaya', '13', '1374', '137404'),
-(36374, '137404058', 'Manresa', '13', '1374', '137404');
-INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`, `citymun_code`) VALUES
+(36374, '137404058', 'Manresa', '13', '1374', '137404'),
+
 (36375, '137404059', 'Mangga', '13', '1374', '137404'),
 (36376, '137404060', 'Mariana', '13', '1374', '137404'),
 (36377, '137404061', 'Mariblo', '13', '1374', '137404'),
@@ -37264,8 +37264,8 @@ INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`
 (37221, '140116003', 'Luzong', '14', '1401', '140116'),
 (37222, '140116004', 'Ayyeng (Pob.)', '14', '1401', '140116'),
 (37223, '140116005', 'San Jose Norte', '14', '1401', '140116'),
-(37224, '140116006', 'San Jose Sur', '14', '1401', '140116');
-INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`, `citymun_code`) VALUES
+(37224, '140116006', 'San Jose Sur', '14', '1401', '140116'),
+
 (37225, '140116007', 'San Juan Norte', '14', '1401', '140116'),
 (37226, '140116008', 'San Juan Sur', '14', '1401', '140116'),
 (37227, '140116011', 'San Ramon East', '14', '1401', '140116'),
@@ -38131,8 +38131,8 @@ INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`
 (38087, '144410012', 'Lenga', '14', '1444', '144410'),
 (38088, '144410013', 'Lubon', '14', '1444', '144410'),
 (38089, '144410014', 'Mabalite', '14', '1444', '144410'),
-(38090, '144410015', 'Masla', '14', '1444', '144410');
-INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`, `citymun_code`) VALUES
+(38090, '144410015', 'Masla', '14', '1444', '144410'),
+
 (38091, '144410016', 'Pandayan', '14', '1444', '144410'),
 (38092, '144410017', 'Poblacion', '14', '1444', '144410'),
 (38093, '144410018', 'Sumadel', '14', '1444', '144410'),
@@ -38998,8 +38998,8 @@ INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`
 (38953, '153617075', 'Mipaga Proper', '15', '1536', '153617'),
 (38954, '153617076', 'Moncado Colony', '15', '1536', '153617'),
 (38955, '153617077', 'Moncado Kadingilan', '15', '1536', '153617'),
-(38956, '153617079', 'Moriatao Loksadato', '15', '1536', '153617');
-INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`, `citymun_code`) VALUES
+(38956, '153617079', 'Moriatao Loksadato', '15', '1536', '153617'),
+
 (38957, '153617080', 'Datu Naga', '15', '1536', '153617'),
 (38958, '153617083', 'Navarro (Datu Saber)', '15', '1536', '153617'),
 (38959, '153617085', 'Olawa Ambolong', '15', '1536', '153617'),
@@ -39862,8 +39862,8 @@ INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`
 (39816, '153814006', 'Ganta', '15', '1538', '153814'),
 (39817, '153814008', 'Katidtuan', '15', '1538', '153814'),
 (39818, '153814009', 'Langeban', '15', '1538', '153814'),
-(39819, '153814011', 'Liong', '15', '1538', '153814');
-INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`, `citymun_code`) VALUES
+(39819, '153814011', 'Liong', '15', '1538', '153814'),
+
 (39820, '153814012', 'Maitong', '15', '1538', '153814'),
 (39821, '153814013', 'Matilak', '15', '1538', '153814'),
 (39822, '153814014', 'Pagalungan', '15', '1538', '153814'),
@@ -40739,8 +40739,8 @@ INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`
 (40692, '157010013', 'Mantabuan Tabunan', '15', '1570', '157010'),
 (40693, '157010014', 'Sapa-sapa (Pob.)', '15', '1570', '157010'),
 (40694, '157010015', 'Tapian Bohe North', '15', '1570', '157010'),
-(40695, '157010016', 'Look Natuh', '15', '1570', '157010');
-INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`, `citymun_code`) VALUES
+(40695, '157010016', 'Look Natuh', '15', '1570', '157010'),
+
 (40696, '157010017', 'Lookan Latuan', '15', '1570', '157010'),
 (40697, '157010018', 'Nunuk Likud Sikubong', '15', '1570', '157010'),
 (40698, '157010019', 'Pamasan', '15', '1570', '157010'),
@@ -41605,8 +41605,8 @@ INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`
 (41557, '166724015', 'Cagutsan', '16', '1667', '166724'),
 (41558, '166724016', 'Cantiasay', '16', '1667', '166724'),
 (41559, '166724017', 'Capalayan', '16', '1667', '166724'),
-(41560, '166724018', 'Catadman', '16', '1667', '166724');
-INSERT INTO `barangays` (`id`, `brgy_code`, `brgy_desc`, `reg_code`, `prov_code`, `citymun_code`) VALUES
+(41560, '166724018', 'Catadman', '16', '1667', '166724'),
+
 (41561, '166724019', 'Danao', '16', '1667', '166724'),
 (41562, '166724020', 'Danawan', '16', '1667', '166724'),
 (41563, '166724021', 'Day-asan', '16', '1667', '166724'),

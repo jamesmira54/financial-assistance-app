@@ -905,9 +905,7 @@ INSERT INTO `citymuns` (`id`, `psgc_code`, `citymun_desc`, `reg_desc`, `prov_cod
 (904, '072246000', 'SIBONGA', '07', '0722', '072246'),
 (905, '072247000', 'SOGOD', '07', '0722', '072247'),
 (906, '072248000', 'TABOGON', '07', '0722', '072248'),
-(907, '072249000', 'TABUELAN', '07', '0722', '072249');
-
-INSERT INTO `citymuns` (`id`, `psgc_code`, `citymun_desc`, `reg_desc`, `prov_code`, `citymun_code`) VALUES
+(907, '072249000', 'TABUELAN', '07', '0722', '072249'),
 (908, '072250000', 'CITY OF TALISAY', '07', '0722', '072250'),
 (909, '072251000', 'TOLEDO CITY', '07', '0722', '072251'),
 (910, '072252000', 'TUBURAN', '07', '0722', '072252'),
