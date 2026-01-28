@@ -8,7 +8,7 @@ export interface FaqCreateInput {
     answer: string;
     category?: string;
     sort_order?: number;
-    created_by?: Buffer;
+    created_by?: Uint8Array<ArrayBuffer>;
 }
 
 export interface FaqUpdateInput {
@@ -16,7 +16,7 @@ export interface FaqUpdateInput {
     answer?: string;
     category?: string;
     sort_order?: number;
-    updated_by?: Buffer;
+    updated_by?: Uint8Array<ArrayBuffer>;
 }
 
 export const createFaqRepo = async (data: FaqCreateInput): Promise<faq> => {

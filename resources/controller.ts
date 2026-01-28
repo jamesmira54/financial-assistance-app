@@ -19,7 +19,7 @@ import path from "path";
 // Middleware to check if resource exists
 const checkResourceExists = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-        const { resourceId } = req.params;
+        const resourceId = req.params.resourceId as string;
         const exists = await doesResourceExist(resourceId);
         if (!exists) {
             ResponseHandler.invalidRequest(req, res, "Resource not found");
@@ -75,7 +75,7 @@ export default () => {
         async (req: Request, res: Response): Promise<void> => {
             try {
                 const authHeader: string = req.headers.authorization as string;
-                const { resourceId } = req.params;
+                const resourceId = req.params.resourceId as string;
                 const payload: ResourcePayload = {
                     title: req.body.title,
                     description: req.body.description,
@@ -107,7 +107,7 @@ export default () => {
         checkResourceExists,
         async (req: Request, res: Response): Promise<void> => {
             try {
-                const { resourceId } = req.params;
+                const resourceId = req.params.resourceId as string;
                 await deleteResource(resourceId);
                 ResponseHandler.updated(req, res, "Resource deleted successfully");
             } catch (err) {
@@ -119,7 +119,7 @@ export default () => {
     // Get single resource
     resourceAPI.get('/:resourceId', checkResourceExists, async (req: Request, res: Response): Promise<void> => {
         try {
-            const { resourceId } = req.params;
+            const resourceId = req.params.resourceId as string;
             const response: ResourceResponse | null = await getOneResource(resourceId);
             ResponseHandler.ok(req, res, response);
         } catch (err) {
@@ -141,7 +141,7 @@ export default () => {
     // Download resource file
     resourceAPI.get('/:resourceId/download', checkResourceExists, async (req: Request, res: Response): Promise<void> => {
         try {
-            const { resourceId } = req.params;
+            const resourceId = req.params.resourceId as string;
             const resource = await downloadResource(resourceId);
 
             if (!resource) {

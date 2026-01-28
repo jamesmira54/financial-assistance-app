@@ -16,7 +16,7 @@ import { allowRoles, authentication } from '../middleware/authentication';
 // Middleware to check if FAQ exists
 const checkFaqExists = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-        const { faqId } = req.params;
+        const faqId = req.params.faqId as string;
         const exists = await doesFaqExist(faqId);
         if (!exists) {
             ResponseHandler.invalidRequest(req, res, 'FAQ not found');
@@ -68,7 +68,7 @@ export default () => {
         async (req: Request, res: Response): Promise<void> => {
             try {
                 const authHeader: string = req.headers.authorization as string;
-                const { faqId } = req.params;
+                const faqId = req.params.faqId as string;
                 const payload: FaqPayload = {
                     question: req.body.question,
                     answer: req.body.answer,
@@ -97,7 +97,7 @@ export default () => {
         checkFaqExists,
         async (req: Request, res: Response): Promise<void> => {
             try {
-                const { faqId } = req.params;
+                const faqId = req.params.faqId as string;
                 await deleteFaq(faqId);
                 ResponseHandler.updated(req, res, 'FAQ deleted successfully');
             } catch (err) {
@@ -109,7 +109,7 @@ export default () => {
     // Get single FAQ (public)
     faqAPI.get('/:faqId', checkFaqExists, async (req: Request, res: Response): Promise<void> => {
         try {
-            const { faqId } = req.params;
+            const faqId = req.params.faqId as string;
             const response = await getOneFaq(faqId);
             ResponseHandler.ok(req, res, response);
         } catch (err) {

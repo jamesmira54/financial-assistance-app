@@ -14,7 +14,7 @@ import {
 // Middleware to check if notification exists and belongs to user
 const checkNotificationExists = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-        const { notificationId } = req.params;
+        const notificationId = req.params.notificationId as string;
         const authHeader = req.headers.authorization as string;
         const exists = await doesNotificationExist(notificationId, authHeader);
         if (!exists) {
@@ -58,7 +58,7 @@ export default () => {
     // Get single notification
     notificationAPI.get('/:notificationId', checkNotificationExists, async (req: Request, res: Response): Promise<void> => {
         try {
-            const { notificationId } = req.params;
+            const notificationId = req.params.notificationId as string;
             const authHeader = req.headers.authorization as string;
             const response: NotificationResponse | null = await getNotificationById(notificationId, authHeader);
             ResponseHandler.ok(req, res, response);
@@ -70,7 +70,7 @@ export default () => {
     // Mark single notification as read
     notificationAPI.put('/:notificationId/read', checkNotificationExists, async (req: Request, res: Response): Promise<void> => {
         try {
-            const { notificationId } = req.params;
+            const notificationId = req.params.notificationId as string;
             const authHeader = req.headers.authorization as string;
             const response = await markAsRead(notificationId, authHeader);
             ResponseHandler.updated(req, res, response);
@@ -93,7 +93,7 @@ export default () => {
     // Delete notification
     notificationAPI.delete('/:notificationId', checkNotificationExists, async (req: Request, res: Response): Promise<void> => {
         try {
-            const { notificationId } = req.params;
+            const notificationId = req.params.notificationId as string;
             const authHeader = req.headers.authorization as string;
             await deleteNotification(notificationId, authHeader);
             ResponseHandler.updated(req, res, "Notification deleted successfully");

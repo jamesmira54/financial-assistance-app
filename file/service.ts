@@ -27,7 +27,7 @@ export const findFileTypeId = async (fileTypeId: string): Promise<boolean>  => {
 }
 
 export const checkIfInvalidFileTypeId = async ( fileTypeIds: string[]): Promise<boolean> => {
-    const convertedId: Buffer[] = fileTypeIds.map( item => uuidToBinary(item));
+    const convertedId = fileTypeIds.map( item => uuidToBinary(item));
     return await checkIfInvalidFileTypeIdRepo( convertedId );
 }
 

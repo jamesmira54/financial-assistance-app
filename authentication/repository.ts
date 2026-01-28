@@ -1,5 +1,5 @@
 import { Prisma, PrismaClient, user, Prisma as PrismaTypes } from '@prisma/client';
-type Bytes = Buffer;
+type Bytes = Uint8Array<ArrayBuffer>;
 import { binaryToUuid, RecordStatus, uuidToBinary } from '../utils';
 import { User, UserRole } from './model';
 import { notEqual } from 'assert';
@@ -215,12 +215,17 @@ export const getUserByEmailRepo = async (email: string): Promise<user | null> =>
 
 export const createPasswordResetTokenRepo = async (userId: Bytes | Uint8Array, token: string, expiresAt: Date) => {
   try {
-    const userIdBuffer = Buffer.from(userId);
+    const userIdArray: Uint8Array<ArrayBuffer> = new Uint8Array(
+      userId.buffer.slice(
+        userId.byteOffset,
+        userId.byteOffset + userId.byteLength
+      ) as ArrayBuffer
+    );
 
     // Invalidate any existing tokens for this user
     await prisma.passwordResetToken.updateMany({
       where: {
-        user_id: userIdBuffer,
+        user_id: userIdArray,
         used: false
       },
       data: {
@@ -231,7 +236,7 @@ export const createPasswordResetTokenRepo = async (userId: Bytes | Uint8Array, t
     // Create new token
     const resetToken = await prisma.passwordResetToken.create({
       data: {
-        user_id: userIdBuffer,
+        user_id: userIdArray,
         token: token,
         expires_at: expiresAt
       }
@@ -275,8 +280,14 @@ export const markTokenAsUsedRepo = async (token: string) => {
 
 export const resetPasswordRepo = async (userId: Bytes | Uint8Array, hashedPassword: string) => {
   try {
+    const userIdArray: Uint8Array<ArrayBuffer> = new Uint8Array(
+      userId.buffer.slice(
+        userId.byteOffset,
+        userId.byteOffset + userId.byteLength
+      ) as ArrayBuffer
+    );
     await prisma.user.update({
-      where: { id: Buffer.from(userId) },
+      where: { id: userIdArray },
       data: { password: hashedPassword }
     });
   } catch (error) {

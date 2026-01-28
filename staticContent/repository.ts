@@ -9,13 +9,13 @@ export interface StaticContentCreateInput {
     content_type: ContentType;
     title: string;
     content: string;
-    created_by?: Buffer;
+    created_by?: Uint8Array<ArrayBuffer>;
 }
 
 export interface StaticContentUpdateInput {
     title?: string;
     content?: string;
-    updated_by?: Buffer;
+    updated_by?: Uint8Array<ArrayBuffer>;
 }
 
 export const createOrUpdateStaticContentRepo = async (

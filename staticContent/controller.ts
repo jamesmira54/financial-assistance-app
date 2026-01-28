@@ -22,7 +22,7 @@ export default () => {
         async (req: Request, res: Response): Promise<void> => {
             try {
                 const authHeader: string = req.headers.authorization as string;
-                const { contentType } = req.params;
+                const contentType = req.params.contentType as string;
                 const payload: StaticContentPayload = {
                     title: req.body.title,
                     content: req.body.content
@@ -52,7 +52,7 @@ export default () => {
         allowRoles('system admin'),
         async (req: Request, res: Response): Promise<void> => {
             try {
-                const { contentType } = req.params;
+                const contentType = req.params.contentType as string;
                 await deleteStaticContent(contentType.toUpperCase());
                 ResponseHandler.updated(req, res, 'Content deleted successfully');
             } catch (err) {
@@ -64,7 +64,7 @@ export default () => {
     // Get static content by type (public)
     staticContentAPI.get('/:contentType', async (req: Request, res: Response): Promise<void> => {
         try {
-            const { contentType } = req.params;
+            const contentType = req.params.contentType as string;
             const response = await getStaticContentByType(contentType.toUpperCase());
 
             if (!response) {

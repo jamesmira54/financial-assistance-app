@@ -3,8 +3,12 @@ import { ERROR_MESSAGES } from "./constant";
 import { QueryParams } from "./types";
 
 
-export function uuidToBinary(uuid: string): Buffer {
-  return Buffer.from(uuid.replace(/-/g, ''), 'hex');
+export function uuidToBinary(uuid: string): Uint8Array<ArrayBuffer> {
+  const buf = Buffer.from(uuid.replace(/-/g, ''), 'hex');
+
+  return new Uint8Array(
+    buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength)
+  );
 }
 
 

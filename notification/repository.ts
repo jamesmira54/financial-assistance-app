@@ -2,12 +2,12 @@ import { notification, Prisma, PrismaClient } from "@prisma/client";
 import { uuidToBinary } from "../utils";
 
 export interface NotificationData {
-    id: Buffer;
-    user_id: Buffer;
+    id: Uint8Array<ArrayBuffer>;
+    user_id: Uint8Array<ArrayBuffer>;
     title: string;
     message: string;
     type: string;
-    reference_id: Buffer | null;
+    reference_id: Uint8Array<ArrayBuffer> | null;
     is_read: boolean;
     created_at: Date;
 }

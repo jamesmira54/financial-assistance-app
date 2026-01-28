@@ -49,7 +49,7 @@ export const findFileTypeIdRepo = async (
   }
 };
 
-export const checkIfInvalidFileTypeIdRepo = async (fileTypeIds: Buffer[]) => {
+export const checkIfInvalidFileTypeIdRepo = async (fileTypeIds: Uint8Array<ArrayBuffer>[]) => {
   const validFileTypessCount = await prisma.fileType.count({
     where: {
       id: { in: fileTypeIds },

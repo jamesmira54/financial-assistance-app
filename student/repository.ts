@@ -23,7 +23,7 @@ export const registerStudentRepo = async (
 
 export const updateStudentRepo = async (
   studentData: Prisma.studentUncheckedUpdateInput,
-  studentId: Buffer
+  studentId: Uint8Array<ArrayBuffer>
 ): Promise<student> => {
   try {
     const updatedStudent = await prisma.student.update({
@@ -40,7 +40,7 @@ export const updateStudentRepo = async (
 
 export const partialUpdateStudentRepo = async (
   studentData: Prisma.studentUncheckedUpdateInput,
-  studentId: Buffer
+  studentId: Uint8Array<ArrayBuffer>
 ): Promise<student> => {
   try {
     const updatedStudent = await prisma.student.update({
