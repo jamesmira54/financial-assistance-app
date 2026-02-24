@@ -434,7 +434,7 @@ export function toFileTypeResponse( payload: any):FileTypeResponse {
   }
 }
 
-export function toSponsorshipResponse( payload: any ): SponsorshipResponse {
+export function toSponsorshipResponse( payload: any, pairwise: any[] = [] ): SponsorshipResponse {
   return {
     id: binaryToUuid(payload.id),
     name: payload.name,
@@ -480,6 +480,15 @@ export function toSponsorshipResponse( payload: any ): SponsorshipResponse {
         table: col.table,
         column: col.column,
       }))
+    })),
+    pairwise: pairwise.map(p => ({
+      id: binaryToUuid(p.id),
+      sponsorshipId: binaryToUuid(p.sponsorship_id),
+      criterionAId: binaryToUuid(p.sponsorship_criterion_id_a),
+      criterionAName: p.sponsorship_criterion_name_a,
+      criterionBId: binaryToUuid(p.sponsorship_criterion_id_b),
+      criterionBName: p.sponsorship_criterion_name_b,
+      value: p.value,
     })),
   };
 }

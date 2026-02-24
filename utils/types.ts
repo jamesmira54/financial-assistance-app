@@ -103,6 +103,7 @@ export interface SponsorshipResponse {
   sponsorshipRequirements: any[],
   students: any[],
   criterion: any[],
+  pairwise: any[],
 }
 
 export interface ApplySponsorshipResponse {

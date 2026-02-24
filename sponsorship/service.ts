@@ -445,7 +445,9 @@ export const getOneSponsorship = async (
     });
   }
 
-  return toSponsorshipResponse(data);
+  const pairwiseData: SponsorshipCriteriaPairwise[] = await getAllSponsorshipCriterionPairwiseRepo(sponsorshipId, prisma);
+
+  return toSponsorshipResponse(data, pairwiseData);
 };
 
 export const adjustStudentEligibilityStatus = async (
