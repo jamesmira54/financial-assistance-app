@@ -52,10 +52,12 @@ model role {
 model module {
   id            Bytes              @id @default(dbgenerated("(UUID_TO_BIN(UUID()))")) @db.Binary(16)
   name          String
-  parentModule  Int?
+  parent_id     Bytes?             @db.Binary(16)
   sorter        Int
   record_status Boolean            @default(true)
   permissions   modulePermission[]
+  parent        module?            @relation("ModuleChildren", fields: [parent_id], references: [id])
+  children      module[]           @relation("ModuleChildren")
 }
 
 model modulePermission {

@@ -256,11 +256,14 @@ export function toUserPermissionResponse(permissions: any[]): any[] {
   }
 
   return permissions.map(permission => ({
-    moduleId: binaryToUuid(permission.module_id), 
+    moduleId: binaryToUuid(permission.module_id),
     moduleName: permission.module?.name,
+    parentId: permission.module?.parent_id ? binaryToUuid(permission.module.parent_id) : null,
+    parentName: permission.module?.parent?.name ?? null,
     roleId: binaryToUuid(permission.role_id),
     roleName: permission.role?.name,
     show: permission.show ?? false,
+    edit: permission.edit ?? false,
     save: permission.save ?? false,
     delete: permission.delete ?? false,
   }));

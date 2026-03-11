@@ -123,7 +123,13 @@ export const getPermission = async (roleId: string ) : Promise<any> => {
         module_id: true,
         module: {
           select: {
-            name: true
+            name: true,
+            parent_id: true,
+            parent: {
+              select: {
+                name: true
+              }
+            }
           }
         },
         role_id: true,
