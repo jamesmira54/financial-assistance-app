@@ -357,6 +357,20 @@ export const countNumberOfGrantee = async ( prisma: any, sponsorshipId: string )
   return app;
 }
 
+export const cancelStudentApplicationRepo = async (
+  studentId: string,
+  sponsorshipId: string,
+  prisma: any
+): Promise<void> => {
+  await prisma.sponsorshipApplication.updateMany({
+    where: {
+      student_id: uuidToBinary(studentId),
+      sponsorship_id: uuidToBinary(sponsorshipId),
+    },
+    data: { record_status: RecordStatus.DELETED },
+  });
+};
+
 export const deleteOneSponsorshipRepo = async (id: string, prisma: any) => {
   await prisma.sponsorship.update({
     where: { id: uuidToBinary(id) },
@@ -418,6 +432,7 @@ export const doesStudentAlreadyAppliedRepo = async (
     where: {
       sponsorship_id: uuidToBinary(sponsorshipId),
       student_id: uuidToBinary(studentId),
+      record_status: RecordStatus.ACTIVE,
     },
   });
   return data !== null;

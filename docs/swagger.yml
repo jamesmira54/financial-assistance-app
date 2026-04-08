@@ -32,6 +32,20 @@ tags:
     description: Endpoints for Student Sponsorship
   - name: Schedule
     description: Endpoints for interview/exam schedule
+  - name: Academic Year
+    description: Endpoints for academic year management
+  - name: Dashboard
+    description: Endpoints for dashboard statistics
+  - name: Resources
+    description: Endpoints for downloadable resources
+  - name: Notifications
+    description: Endpoints for user notifications
+  - name: FAQ
+    description: Endpoints for frequently asked questions
+  - name: Static Content
+    description: Endpoints for static content management (About Us, Contact Us)
+security:
+  - BearerAuth: []
 paths:
   /auth/register:
     post:
@@ -149,6 +163,177 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
         '500':
           description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalErrorResponse'
+  /auth/me:
+    get:
+      tags:
+        - Authentication
+      summary: Get current authenticated user details
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Current user details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetOneUserResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalErrorResponse'
+  /auth/forgot-password:
+    post:
+      tags:
+        - Authentication
+      summary: Request password reset email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: johndoe@gmail.com
+              required:
+                - email
+      responses:
+        '200':
+          description: Password reset email sent
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: Password reset email sent successfully
+                  generatedAt:
+                    type: integer
+                    example: 1738335123028
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalErrorResponse'
+  /auth/reset-password:
+    post:
+      tags:
+        - Authentication
+      summary: Reset password with token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                  example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
+                password:
+                  type: string
+                  example: newPassword123
+              required:
+                - token
+                - password
+      responses:
+        '200':
+          description: Password successfully reset
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: Password successfully reset
+                  generatedAt:
+                    type: integer
+                    example: 1738335123028
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalErrorResponse'
+  /auth/validate-reset-token/{token}:
+    get:
+      tags:
+        - Authentication
+      summary: Validate a password reset token
+      parameters:
+        - name: token
+          in: path
+          required: true
+          description: The password reset token to validate
+          schema:
+            type: string
+            example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
+      responses:
+        '200':
+          description: Token is valid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: Token is valid
+                  data:
+                    type: object
+                    properties:
+                      valid:
+                        type: boolean
+                        example: true
+                  generatedAt:
+                    type: integer
+                    example: 1738335123028
+        '400':
+          description: Invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
           content:
             application/json:
               schema:
@@ -1948,6 +2133,1512 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/GetCustomInputSuccessResponse'
+  /sponsorships/student/available/{studentId}:
+    get:
+      tags:
+        - Student Sponsorship
+      summary: Get available sponsorships for a specific student
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: studentId
+          in: path
+          required: true
+          description: The ID of the student
+          schema:
+            type: string
+            example: fa8d0ba7-3bd8-4a30-8127-82ca571d1bd0
+      responses:
+        '200':
+          description: A list of available sponsorships for the student
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetAllSponsorshipSuccessResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalErrorResponse'
+  /sponsorships/student/{sponsorshipId}:
+    get:
+      tags:
+        - Student Sponsorship
+      summary: Get one student sponsorship application
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: sponsorshipId
+          in: path
+          required: true
+          description: The ID of the sponsorship application
+          schema:
+            type: string
+            example: fa8d0ba7-3bd8-4a30-8127-82ca571d1bd0
+      responses:
+        '200':
+          description: Details of a student sponsorship application
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetApplySponsorshipSuccessResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorResponse'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalErrorResponse'
+  /sponsorships/student/my-sponsorships/{studentId}:
+    get:
+      tags:
+        - Student Sponsorship
+      summary: Get all sponsorships for a student
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: studentId
+          in: path
+          required: true
+          description: The ID of the student
+          schema:
+            type: string
+            example: fa8d0ba7-3bd8-4a30-8127-82ca571d1bd0
+      responses:
+        '200':
+          description: A list of the student's sponsorship applications
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetAllApplySponsorshipSuccessResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalErrorResponse'
+  /sponsorships/student/{studentId}/cancel/{sponsorshipId}:
+    delete:
+      tags:
+        - Student Sponsorship
+      summary: Cancel a sponsorship application (only allowed at POOLING stage)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: studentId
+          in: path
+          required: true
+          description: The ID of the student
+          schema:
+            type: string
+            example: fa8d0ba7-3bd8-4a30-8127-82ca571d1bd0
+        - name: sponsorshipId
+          in: path
+          required: true
+          description: The ID of the sponsorship
+          schema:
+            type: string
+            example: fa8d0ba7-3bd8-4a30-8127-82ca571d1bd0
+      responses:
+        '200':
+          description: Sponsorship application cancelled successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessDeleteResponse'
+        '400':
+          description: Application not found or not in POOLING stage
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalErrorResponse'
+  /sponsorships/applicants/by-stage:
+    get:
+      tags:
+        - Coordinator Sponsorship
+      summary: Get all applicants filtered by application stage
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: applicationStage
+          schema:
+            type: string
+          description: Filter by application stage
+        - in: query
+          name: applicationStatus
+          schema:
+            type: string
+          description: Filter by application status
+        - in: query
+          name: sponsorshipId
+          schema:
+            type: string
+          description: Filter by sponsorship ID
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Search term for filtering applicants
+        - in: query
+          name: sort
+          schema:
+            type: string
+          description: Field to sort by
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            minimum: 0
+          description: Number of records to skip
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+          description: Maximum number of records to return
+      responses:
+        '200':
+          description: A list of applicants filtered by stage
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetAllApplySponsorshipSuccessResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalErrorResponse'
+  /sponsorships/rank-student/{sponsorshipId}:
+    get:
+      tags:
+        - Coordinator Sponsorship
+      summary: Rank students for a sponsorship using SAW score results
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: sponsorshipId
+          in: path
+          required: true
+          description: The ID of the sponsorship
+          schema:
+            type: string
+            example: fa8d0ba7-3bd8-4a30-8127-82ca571d1bd0
+      responses:
+        '200':
+          description: Ranked students with SAW scores
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: Resource Successfully Retrieved!
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        studentId:
+                          type: string
+                          example: fa8d0ba7-3bd8-4a30-8127-82ca571d1bd0
+                        studentName:
+                          type: string
+                          example: John Doe
+                        sawScore:
+                          type: number
+                          example: 0.85
+                        rank:
+                          type: integer
+                          example: 1
+                  generatedAt:
+                    type: integer
+                    example: 1738335123028
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorResponse'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalErrorResponse'
+  /dashboard:
+    get:
+      tags:
+        - Dashboard
+      summary: Get basic dashboard statistics
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Basic dashboard statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: Resource Successfully Retrieved!
+                  data:
+                    $ref: '#/components/schemas/DashboardStats'
+                  generatedAt:
+                    type: integer
+                    example: 1738335123028
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalErrorResponse'
+  /dashboard/enhanced:
+    get:
+      tags:
+        - Dashboard
+      summary: Get enhanced dashboard stats with detailed breakdowns
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Enhanced dashboard statistics with detailed breakdowns
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: Resource Successfully Retrieved!
+                  data:
+                    $ref: '#/components/schemas/EnhancedDashboardStats'
+                  generatedAt:
+                    type: integer
+                    example: 1738335123028
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalErrorResponse'
+  /resources:
+    get:
+      tags:
+        - Resources
+      summary: Get all resources (public, no auth required)
+      parameters:
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Search term for filtering resources
+        - in: query
+          name: sort
+          schema:
+            type: string
+          description: Field to sort by
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            minimum: 0
+          description: Number of records to skip
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+          description: Maximum number of records to return
+        - in: query
+          name: category
+          schema:
+            type: string
+          description: Filter by category
+      responses:
+        '200':
+          description: A list of resources
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: Resource Successfully Retrieved!
+                  data:
+                    type: object
+                    properties:
+                      count:
+                        type: integer
+                        example: 10
+                      resources:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ResourceResponse'
+                  generatedAt:
+                    type: integer
+                    example: 1738335123028
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalErrorResponse'
+    post:
+      tags:
+        - Resources
+      summary: Create a resource (admin/coordinator only)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: The file to upload
+                title:
+                  type: string
+                  example: Financial Aid Guide
+                description:
+                  type: string
+                  example: A comprehensive guide for financial aid applicants
+                category:
+                  type: string
+                  example: guides
+      responses:
+        '201':
+          description: Resource successfully created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    example: 201
+                  message:
+                    type: string
+                    example: Resource Successfully Created!
+                  data:
+                    $ref: '#/components/schemas/ResourceResponse'
+                  generatedAt:
+                    type: integer
+                    example: 1738335123028
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalErrorResponse'
+  /resources/{resourceId}:
+    get:
+      tags:
+        - Resources
+      summary: Get one resource
+      parameters:
+        - name: resourceId
+          in: path
+          required: true
+          description: The ID of the resource
+          schema:
+            type: string
+            example: fa8d0ba7-3bd8-4a30-8127-82ca571d1bd0
+      responses:
+        '200':
+          description: Resource details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: Resource Successfully Retrieved!
+                  data:
+                    $ref: '#/components/schemas/ResourceResponse'
+                  generatedAt:
+                    type: integer
+                    example: 1738335123028
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalErrorResponse'
+    put:
+      tags:
+        - Resources
+      summary: Update a resource (admin/coordinator only)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: resourceId
+          in: path
+          required: true
+          description: The ID of the resource
+          schema:
+            type: string
+            example: fa8d0ba7-3bd8-4a30-8127-82ca571d1bd0
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: The file to upload (optional)
+                title:
+                  type: string
+                  example: Updated Financial Aid Guide
+                description:
+                  type: string
+                  example: An updated guide for financial aid applicants
+                category:
+                  type: string
+                  example: guides
+      responses:
+        '200':
+          description: Resource successfully updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: Resource Successfully Updated!
+                  data:
+                    $ref: '#/components/schemas/ResourceResponse'
+                  generatedAt:
+                    type: integer
+                    example: 1738335123028
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorResponse'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalErrorResponse'
+    delete:
+      tags:
+        - Resources
+      summary: Delete a resource (admin/coordinator only)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: resourceId
+          in: path
+          required: true
+          description: The ID of the resource
+          schema:
+            type: string
+            example: fa8d0ba7-3bd8-4a30-8127-82ca571d1bd0
+      responses:
+        '200':
+          description: Resource successfully deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessDeleteResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorResponse'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalErrorResponse'
+  /resources/{resourceId}/download:
+    get:
+      tags:
+        - Resources
+      summary: Download a resource file
+      parameters:
+        - name: resourceId
+          in: path
+          required: true
+          description: The ID of the resource to download
+          schema:
+            type: string
+            example: fa8d0ba7-3bd8-4a30-8127-82ca571d1bd0
+      responses:
+        '200':
+          description: File download
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalErrorResponse'
+  /notifications:
+    get:
+      tags:
+        - Notifications
+      summary: Get all notifications for current user
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+          description: Maximum number of records to return
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            minimum: 0
+          description: Number of records to skip
+      responses:
+        '200':
+          description: A list of notifications
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: Resource Successfully Retrieved!
+                  data:
+                    type: object
+                    properties:
+                      count:
+                        type: integer
+                        example: 5
+                      notifications:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/NotificationResponse'
+                  generatedAt:
+                    type: integer
+                    example: 1738335123028
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalErrorResponse'
+  /notifications/unread-count:
+    get:
+      tags:
+        - Notifications
+      summary: Get unread notification count
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Unread notification count
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: Resource Successfully Retrieved!
+                  data:
+                    type: object
+                    properties:
+                      unreadCount:
+                        type: integer
+                        example: 3
+                  generatedAt:
+                    type: integer
+                    example: 1738335123028
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalErrorResponse'
+  /notifications/read-all:
+    put:
+      tags:
+        - Notifications
+      summary: Mark all notifications as read
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: All notifications marked as read
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: All notifications marked as read
+                  generatedAt:
+                    type: integer
+                    example: 1738335123028
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalErrorResponse'
+  /notifications/{notificationId}:
+    get:
+      tags:
+        - Notifications
+      summary: Get single notification
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: notificationId
+          in: path
+          required: true
+          description: The ID of the notification
+          schema:
+            type: string
+            example: fa8d0ba7-3bd8-4a30-8127-82ca571d1bd0
+      responses:
+        '200':
+          description: Notification details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: Resource Successfully Retrieved!
+                  data:
+                    $ref: '#/components/schemas/NotificationResponse'
+                  generatedAt:
+                    type: integer
+                    example: 1738335123028
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorResponse'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalErrorResponse'
+    put:
+      tags:
+        - Notifications
+      summary: Mark a notification as read
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: notificationId
+          in: path
+          required: true
+          description: The ID of the notification
+          schema:
+            type: string
+            example: fa8d0ba7-3bd8-4a30-8127-82ca571d1bd0
+      responses:
+        '200':
+          description: Notification marked as read
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: Notification marked as read
+                  data:
+                    $ref: '#/components/schemas/NotificationResponse'
+                  generatedAt:
+                    type: integer
+                    example: 1738335123028
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorResponse'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalErrorResponse'
+    delete:
+      tags:
+        - Notifications
+      summary: Delete a notification
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: notificationId
+          in: path
+          required: true
+          description: The ID of the notification
+          schema:
+            type: string
+            example: fa8d0ba7-3bd8-4a30-8127-82ca571d1bd0
+      responses:
+        '200':
+          description: Notification deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessDeleteResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorResponse'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalErrorResponse'
+  /faqs:
+    get:
+      tags:
+        - FAQ
+      summary: Get all FAQs (public)
+      parameters:
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Search term for filtering FAQs
+        - in: query
+          name: sort
+          schema:
+            type: string
+          description: Field to sort by
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            minimum: 0
+          description: Number of records to skip
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+          description: Maximum number of records to return
+        - in: query
+          name: category
+          schema:
+            type: string
+          description: Filter by category
+      responses:
+        '200':
+          description: A list of FAQs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: Resource Successfully Retrieved!
+                  data:
+                    type: object
+                    properties:
+                      count:
+                        type: integer
+                        example: 10
+                      faqs:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/FaqResponse'
+                  generatedAt:
+                    type: integer
+                    example: 1738335123028
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalErrorResponse'
+    post:
+      tags:
+        - FAQ
+      summary: Create FAQ (admin/coordinator only)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FaqPayload'
+      responses:
+        '201':
+          description: FAQ successfully created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    example: 201
+                  message:
+                    type: string
+                    example: Resource Successfully Created!
+                  data:
+                    $ref: '#/components/schemas/FaqResponse'
+                  generatedAt:
+                    type: integer
+                    example: 1738335123028
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalErrorResponse'
+  /faqs/meta/categories:
+    get:
+      tags:
+        - FAQ
+      summary: Get FAQ categories (public)
+      responses:
+        '200':
+          description: A list of FAQ categories
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: Resource Successfully Retrieved!
+                  data:
+                    type: array
+                    items:
+                      type: string
+                      example: general
+                  generatedAt:
+                    type: integer
+                    example: 1738335123028
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalErrorResponse'
+  /faqs/{faqId}:
+    get:
+      tags:
+        - FAQ
+      summary: Get single FAQ (public)
+      parameters:
+        - name: faqId
+          in: path
+          required: true
+          description: The ID of the FAQ
+          schema:
+            type: string
+            example: fa8d0ba7-3bd8-4a30-8127-82ca571d1bd0
+      responses:
+        '200':
+          description: FAQ details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: Resource Successfully Retrieved!
+                  data:
+                    $ref: '#/components/schemas/FaqResponse'
+                  generatedAt:
+                    type: integer
+                    example: 1738335123028
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalErrorResponse'
+    put:
+      tags:
+        - FAQ
+      summary: Update FAQ (admin/coordinator only)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: faqId
+          in: path
+          required: true
+          description: The ID of the FAQ
+          schema:
+            type: string
+            example: fa8d0ba7-3bd8-4a30-8127-82ca571d1bd0
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FaqPayload'
+      responses:
+        '200':
+          description: FAQ successfully updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: Resource Successfully Updated!
+                  data:
+                    $ref: '#/components/schemas/FaqResponse'
+                  generatedAt:
+                    type: integer
+                    example: 1738335123028
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorResponse'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalErrorResponse'
+    delete:
+      tags:
+        - FAQ
+      summary: Delete FAQ (admin/coordinator only)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: faqId
+          in: path
+          required: true
+          description: The ID of the FAQ
+          schema:
+            type: string
+            example: fa8d0ba7-3bd8-4a30-8127-82ca571d1bd0
+      responses:
+        '200':
+          description: FAQ successfully deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessDeleteResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorResponse'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalErrorResponse'
+  /static-content:
+    get:
+      tags:
+        - Static Content
+      summary: Get all static content (public)
+      responses:
+        '200':
+          description: A list of static content
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: Resource Successfully Retrieved!
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/StaticContentResponse'
+                  generatedAt:
+                    type: integer
+                    example: 1738335123028
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalErrorResponse'
+  /static-content/meta/types:
+    get:
+      tags:
+        - Static Content
+      summary: Get available content types (public)
+      responses:
+        '200':
+          description: Available static content types
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: Resource Successfully Retrieved!
+                  data:
+                    type: array
+                    items:
+                      type: string
+                      enum:
+                        - ABOUT_US
+                        - CONTACT_US
+                  generatedAt:
+                    type: integer
+                    example: 1738335123028
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalErrorResponse'
+  /static-content/{contentType}:
+    get:
+      tags:
+        - Static Content
+      summary: Get static content by type (public)
+      parameters:
+        - name: contentType
+          in: path
+          required: true
+          description: The content type (ABOUT_US or CONTACT_US)
+          schema:
+            type: string
+            enum:
+              - ABOUT_US
+              - CONTACT_US
+            example: ABOUT_US
+      responses:
+        '200':
+          description: Static content details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: Resource Successfully Retrieved!
+                  data:
+                    $ref: '#/components/schemas/StaticContentResponse'
+                  generatedAt:
+                    type: integer
+                    example: 1738335123028
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalErrorResponse'
+    put:
+      tags:
+        - Static Content
+      summary: Create or update static content (admin only)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: contentType
+          in: path
+          required: true
+          description: The content type (ABOUT_US or CONTACT_US)
+          schema:
+            type: string
+            enum:
+              - ABOUT_US
+              - CONTACT_US
+            example: ABOUT_US
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StaticContentPayload'
+      responses:
+        '200':
+          description: Static content successfully created or updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: Resource Successfully Updated!
+                  data:
+                    $ref: '#/components/schemas/StaticContentResponse'
+                  generatedAt:
+                    type: integer
+                    example: 1738335123028
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalErrorResponse'
+    delete:
+      tags:
+        - Static Content
+      summary: Delete static content (admin only)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: contentType
+          in: path
+          required: true
+          description: The content type (ABOUT_US or CONTACT_US)
+          schema:
+            type: string
+            enum:
+              - ABOUT_US
+              - CONTACT_US
+            example: ABOUT_US
+      responses:
+        '200':
+          description: Static content successfully deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessDeleteResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorResponse'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalErrorResponse'
+  /verify:
+    get:
+      tags:
+        - Authentication
+      summary: Verify authentication token validity
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Token is valid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  valid:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Token is valid
+        '401':
+          description: Unauthorized - token is invalid or expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalErrorResponse'
 components:
   schemas:
     CustomInputPayload:
@@ -3587,3 +5278,211 @@ components:
         remarks:
           type: string
           example: remarks
+    DashboardStats:
+      type: object
+      properties:
+        totalStudents:
+          type: integer
+          example: 120
+        totalSponsorships:
+          type: integer
+          example: 15
+        totalApplications:
+          type: integer
+          example: 200
+        totalApprovedApplications:
+          type: integer
+          example: 80
+        totalPendingApplications:
+          type: integer
+          example: 50
+        totalRejectedApplications:
+          type: integer
+          example: 70
+    EnhancedDashboardStats:
+      type: object
+      properties:
+        totalStudents:
+          type: integer
+          example: 120
+        totalSponsorships:
+          type: integer
+          example: 15
+        totalApplications:
+          type: integer
+          example: 200
+        applicationsByStage:
+          type: array
+          items:
+            type: object
+            properties:
+              stage:
+                type: string
+                example: POOLING
+              count:
+                type: integer
+                example: 50
+        applicationsByStatus:
+          type: array
+          items:
+            type: object
+            properties:
+              status:
+                type: string
+                example: PENDING
+              count:
+                type: integer
+                example: 30
+        sponsorshipsByAcademicYear:
+          type: array
+          items:
+            type: object
+            properties:
+              academicYear:
+                type: string
+                example: 2024-2025
+              count:
+                type: integer
+                example: 5
+    ResourcePayload:
+      type: object
+      properties:
+        title:
+          type: string
+          example: Financial Aid Guide
+        description:
+          type: string
+          example: A comprehensive guide for financial aid applicants
+        category:
+          type: string
+          example: guides
+    ResourceResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          example: fa8d0ba7-3bd8-4a30-8127-82ca571d1bd0
+        title:
+          type: string
+          example: Financial Aid Guide
+        description:
+          type: string
+          example: A comprehensive guide for financial aid applicants
+        category:
+          type: string
+          example: guides
+        fileName:
+          type: string
+          example: financial_aid_guide.pdf
+        filePath:
+          type: string
+          example: /uploads/resources/financial_aid_guide.pdf
+        downloadCount:
+          type: integer
+          example: 42
+        createdAt:
+          type: string
+          format: date-time
+          example: '2024-01-15T10:30:00Z'
+    NotificationResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          example: fa8d0ba7-3bd8-4a30-8127-82ca571d1bd0
+        title:
+          type: string
+          example: Application Status Updated
+        message:
+          type: string
+          example: Your sponsorship application status has been updated to APPROVED
+        isRead:
+          type: boolean
+          example: false
+        createdAt:
+          type: string
+          format: date-time
+          example: '2024-01-15T10:30:00Z'
+    FaqPayload:
+      type: object
+      properties:
+        question:
+          type: string
+          example: How do I apply for financial assistance?
+        answer:
+          type: string
+          example: You can apply by registering and submitting an application through the portal.
+        category:
+          type: string
+          example: general
+        sortOrder:
+          type: integer
+          example: 1
+      required:
+        - question
+        - answer
+    FaqResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          example: fa8d0ba7-3bd8-4a30-8127-82ca571d1bd0
+        question:
+          type: string
+          example: How do I apply for financial assistance?
+        answer:
+          type: string
+          example: You can apply by registering and submitting an application through the portal.
+        category:
+          type: string
+          example: general
+        sortOrder:
+          type: integer
+          example: 1
+        createdAt:
+          type: string
+          format: date-time
+          example: '2024-01-15T10:30:00Z'
+    StaticContentPayload:
+      type: object
+      properties:
+        title:
+          type: string
+          example: About Us
+        content:
+          type: string
+          example: We are a financial assistance program dedicated to helping students.
+      required:
+        - title
+        - content
+    StaticContentResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          example: fa8d0ba7-3bd8-4a30-8127-82ca571d1bd0
+        contentType:
+          type: string
+          enum:
+            - ABOUT_US
+            - CONTACT_US
+          example: ABOUT_US
+        title:
+          type: string
+          example: About Us
+        content:
+          type: string
+          example: We are a financial assistance program dedicated to helping students.
+        createdAt:
+          type: string
+          format: date-time
+          example: '2024-01-15T10:30:00Z'
+        updatedAt:
+          type: string
+          format: date-time
+          example: '2024-03-20T08:00:00Z'
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

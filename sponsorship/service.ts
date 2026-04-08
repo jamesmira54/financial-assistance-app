@@ -93,6 +93,7 @@ import {
   getAllApplicantsByStageRepo,
   countNumberOfGrantee,
   getSponsorshipBatchNumber,
+  cancelStudentApplicationRepo,
 } from "./repository";
 import {
   Action,
@@ -254,6 +255,30 @@ export const checkSponsorshipLimit = async (
   }
 
   return false;
+};
+
+export const cancelStudentApplication = async (
+  studentId: string,
+  sponsorshipId: string
+): Promise<void> => {
+  const app = await prisma.sponsorshipApplication.findFirst({
+    where: {
+      student_id: uuidToBinary(studentId),
+      sponsorship_id: uuidToBinary(sponsorshipId),
+      record_status: RecordStatus.ACTIVE,
+    },
+    select: { application_stage: true },
+  });
+
+  if (!app) {
+    throw new Error("APPLICATION_NOT_FOUND");
+  }
+
+  if (app.application_stage !== APPLICATION_STAGE.POOLING) {
+    throw new Error("CANNOT_CANCEL_APPLICATION");
+  }
+
+  await cancelStudentApplicationRepo(studentId, sponsorshipId, prisma);
 };
 
 export const getAllStudentSponsorship = async (

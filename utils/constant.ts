@@ -308,4 +308,6 @@ export const VALIDATION_MESSAGES = {
     CUSTOM_INPUT_SPON_CRIT_ID_NOT_FOUND: 'sponsorship criterion id not found',
     SLOT_FULL: "No slots available for this sponsorship.",
     LIMIT_REACHED: "The number of accepted applicants has already reached its limit.",
+    APPLICATION_NOT_FOUND: "Application not found.",
+    CANNOT_CANCEL_APPLICATION: "Application can only be cancelled while in the pooling stage.",
 };

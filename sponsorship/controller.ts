@@ -2,7 +2,7 @@ import { Router } from "express";
 import { validateApplyScholarship, validateBulkCustomInputPayload, validateChangeStudentStatus, validateCustomInputPayload, validatedAppStageParams, validateGetAllCustomInput, validateQueryParams, validateSponsorship, validateSponsorshipId, validateStudentId, validateUpdateCriterionPayload } from "../middleware/validation";
 import { ResponseHandler } from "../response";
 import { ApplySponsorshipRequest, ApplySponsorshipResponse, ConvertedGetAllApplicantsByStageResult, criterionCategoryResponse, CriterionPayload, CriterionResponse, CustomInput, CustomInputResponse, DataSourceTable, ERROR_MESSAGES, getQueryParams, PairwiseMatrixResult, QueryParams, SawScoreType, SponsorshipRequest, SponsorshipResponse, SUCCESS_MESSAGES, ToSponsorshipCriteriResponse, UpdateStudentStatusRequest, VALIDATION_MESSAGES } from "../utils";
-import { adjustStudentEligibilityStatus, applyToSponsorship, bulkUpsertCustomInput, checkRemainingSlot, checkSponsorshipLimit, createSponsorship, deleteOneSponsorship, getAllApplicantsByStage, getAllAvailableSponsorship, getAllCriterionCustomInputValue, getAllSponsorship, getAllStudentSponsorship, getCategoryCriterion, getDataSources, getOneSponsorship, getOneStudentSponsorship, rankStudent, updateSponsorship, updateSponsorshipCriterion } from "./service";
+import { adjustStudentEligibilityStatus, applyToSponsorship, bulkUpsertCustomInput, cancelStudentApplication, checkRemainingSlot, checkSponsorshipLimit, createSponsorship, deleteOneSponsorship, getAllApplicantsByStage, getAllAvailableSponsorship, getAllCriterionCustomInputValue, getAllSponsorship, getAllStudentSponsorship, getCategoryCriterion, getDataSources, getOneSponsorship, getOneStudentSponsorship, rankStudent, updateSponsorship, updateSponsorshipCriterion } from "./service";
 import { allowRoles } from "../middleware/authentication";
 
 export default () => {
@@ -212,6 +212,22 @@ export default () => {
             ResponseHandler.invalidRequest(req,res , err.message);
         }
     }); 
+
+    sponsorshipAPI.delete('/student/:studentId/cancel/:sponsorshipId', allowRoles('system admin', 'student'), validateStudentId, validateSponsorshipId, async (req, res) => {
+        try {
+            const { studentId, sponsorshipId } = req.params;
+            await cancelStudentApplication(studentId, sponsorshipId);
+            ResponseHandler.deleted(req, res, 'Application successfully cancelled.');
+        } catch (err) {
+            if (err.message === 'APPLICATION_NOT_FOUND') {
+                ResponseHandler.invalidRequest(req, res, VALIDATION_MESSAGES.APPLICATION_NOT_FOUND);
+            } else if (err.message === 'CANNOT_CANCEL_APPLICATION') {
+                ResponseHandler.invalidRequest(req, res, VALIDATION_MESSAGES.CANNOT_CANCEL_APPLICATION);
+            } else {
+                ResponseHandler.invalidRequest(req, res, err.message);
+            }
+        }
+    });
 
     sponsorshipAPI.get('/student/my-sponsorships/:studentId', allowRoles('system admin', 'student'), validateStudentId, async (req, res) => {
 
