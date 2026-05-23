@@ -283,20 +283,24 @@ export const cancelStudentApplication = async (
 
 export const getAllStudentSponsorship = async (
   studentId: string,
-  authHeader: any
-): Promise<ApplySponsorshipResponse[]> => {
+  authHeader: any,
+  params: QueryParams
+): Promise<{ data: ApplySponsorshipResponse[]; total: number }> => {
   const userDetails = extractUserFromToken(authHeader);
-  const data: any[] = await getAllStudentSponsorshipRepo(studentId, prisma);
-  
+  const { data, total } = await getAllStudentSponsorshipRepo(studentId, params, prisma);
+
   if (!data || data.length === 0) {
-    return [];
+    return { data: [], total: 0 };
   }
 
   const studentFiles: any[] = await getAllFileOfStudent(
     binaryToUuid(data[0].student.user_id)
   );
 
-  return data.map((e) => toApplyScholarshipResponse(e, studentFiles));
+  return {
+    data: data.map((e) => toApplyScholarshipResponse(e, studentFiles)),
+    total,
+  };
 };
 
 export const getOneStudentSponsorship = async (

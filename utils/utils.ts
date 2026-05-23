@@ -47,7 +47,7 @@ export const extractUserFromToken = (authHeader: any): { email: string, userId: 
 };
 
 export const getQueryParams = (req: any): QueryParams => {
-  const { offset, limit, search, sort, mine, cityMunId, sponsorshipCriterionId, sponsorshipId, studentId, applicationStage, applicationStatus } = req.query;
+  const { offset, limit, search, sort, mine, cityMunId, sponsorshipCriterionId, sponsorshipId, studentId, applicationStage, applicationStatus, status, academic_year_id, sponsor_id, duration_from, duration_to } = req.query;
   return {
     offset: offset && !isNaN(Number(offset)) ? Number(offset) : 0,
     limit: limit && !isNaN(Number(limit)) ? Number(limit) : 50,
@@ -59,6 +59,11 @@ export const getQueryParams = (req: any): QueryParams => {
     sponsorshipId: sponsorshipId,
     studentId: studentId,
     applicationStage: applicationStage,
-    applicationStatus: applicationStatus
+    applicationStatus: applicationStatus,
+    status: (status && status !== 'undefined' && status !== 'null') ? String(status) : null,
+    academic_year_id: (academic_year_id && academic_year_id !== 'undefined' && academic_year_id !== 'null') ? String(academic_year_id) : null,
+    sponsor_id: (sponsor_id && sponsor_id !== 'undefined' && sponsor_id !== 'null') ? String(sponsor_id) : null,
+    duration_from: (duration_from && duration_from !== 'undefined' && duration_from !== 'null') ? String(duration_from) : null,
+    duration_to: (duration_to && duration_to !== 'undefined' && duration_to !== 'null') ? String(duration_to) : null,
   };
 };

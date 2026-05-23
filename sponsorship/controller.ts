@@ -229,17 +229,18 @@ export default () => {
         }
     });
 
-    sponsorshipAPI.get('/student/my-sponsorships/:studentId', allowRoles('system admin', 'student'), validateStudentId, async (req, res) => {
+    sponsorshipAPI.get('/student/my-sponsorships/:studentId', allowRoles('system admin', 'student'), validateStudentId, validateQueryParams, async (req, res) => {
 
         try {
 
             const authHeader = req.headers.authorization;
             const { studentId } = req.params;
-            const data: ApplySponsorshipResponse[] = await getAllStudentSponsorship( studentId, authHeader );
-            ResponseHandler.ok(req, res, data);
+            const params: QueryParams = getQueryParams(req);
+            const result = await getAllStudentSponsorship( studentId, authHeader, params );
+            ResponseHandler.ok(req, res, result);
         } catch (err) {
             ResponseHandler.invalidRequest(req,res , err.message);
         }
-    }); 
+    });
     return sponsorshipAPI;
 }

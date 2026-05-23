@@ -132,7 +132,7 @@ export function convertToUser(data: RegisterRequest, hashedPassword: any ): Pris
   }
 }
 
-export function toUserResponse(user: any): UserListResponse {
+export function toUserResponse(user: any, baseUrl?: string): UserListResponse {
   return {
     username: user.username,
     firstName: user.first_name,
@@ -142,7 +142,8 @@ export function toUserResponse(user: any): UserListResponse {
     userId: binaryToUuid(user.id),
     email: user.email,
     userTypeId: binaryToUuid(user.role_id),
-    userType: user.role?.name || 'Unknown'
+    userType: user.role?.name || 'Unknown',
+    profilePhoto: user.profile && baseUrl ? `${baseUrl}/uploads/images/${user.profile}` : null,
   };
 }
 

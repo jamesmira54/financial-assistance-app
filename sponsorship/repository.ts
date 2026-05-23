@@ -76,37 +76,62 @@ export const applyToSponsorshipRepo = async (
 
 export const getAllStudentSponsorshipRepo = async (
   studentId: string,
+  params: QueryParams,
   prisma: any
-): Promise<any[]> => {
-  return prisma.sponsorshipApplication.findMany({
-    where: {
-      student_id: uuidToBinary(studentId), // Ensure uuidToBinary returns correct binary format
-    },
-    include: {
-      student: {
-        select: {
-          first_name: true,
-          middle_name: true,
-          last_name: true,
-          user_id: true,
-          sex: true, 
-          college_program_name: true, 
-          college_year_level: true,
-          current_citynum:{
-            select: {
-              citymun_desc: true
-            }
-          }
+): Promise<{ data: any[]; total: number }> => {
+  const whereCondition: any = {
+    student_id: uuidToBinary(studentId),
+    record_status: true,
+  };
 
+  if (params.applicationStage) {
+    whereCondition.application_stage = params.applicationStage;
+  }
+
+  if (params.applicationStatus) {
+    whereCondition.application_status = params.applicationStatus;
+  }
+
+  if (params.search && params.search !== '') {
+    whereCondition.sponsorship = {
+      name: { contains: params.search },
+    };
+  }
+
+  const skip = params.offset ?? 0;
+  const take = params.limit ?? 50;
+
+  const [data, total] = await Promise.all([
+    prisma.sponsorshipApplication.findMany({
+      where: whereCondition,
+      skip,
+      take,
+      include: {
+        student: {
+          select: {
+            first_name: true,
+            middle_name: true,
+            last_name: true,
+            user_id: true,
+            sex: true,
+            college_program_name: true,
+            college_year_level: true,
+            current_citynum: {
+              select: { citymun_desc: true },
+            },
+          },
+        },
+        sponsorship: {
+          include: {
+            requirements: { include: { fileType: { select: { name: true } } } },
+          },
         },
       },
-      sponsorship: {
-        include: {
-          requirements: { include: { fileType: { select: { name: true } } } },
-        },
-      },
-    },
-  });
+    }),
+    prisma.sponsorshipApplication.count({ where: whereCondition }),
+  ]);
+
+  return { data, total };
 };
 
 export const getOneStudentSponsorshipRepo = async (
@@ -186,6 +211,26 @@ export const getAllSponsorshipRepo = async (
     whereCondition.name = {
       contains: params.search
     };
+  }
+
+  if (params.status) {
+    whereCondition.status = params.status;
+  }
+
+  if (params.academic_year_id) {
+    whereCondition.academic_year_id = uuidToBinary(params.academic_year_id);
+  }
+
+  if (params.sponsor_id) {
+    whereCondition.sponsor_id = uuidToBinary(params.sponsor_id);
+  }
+
+  if (params.duration_from) {
+    whereCondition.duration_from = { gte: new Date(params.duration_from) };
+  }
+
+  if (params.duration_to) {
+    whereCondition.duration_to = { lte: new Date(params.duration_to) };
   }
 
   return await prisma.sponsorship.findMany({
@@ -857,6 +902,12 @@ export const getAllApplicantsByStageRepo = async (
 
   if (params.sponsorshipId) {
     whereCondition.sponsorship_id = uuidToBinary(params.sponsorshipId);
+  }
+
+  if (params.search && params.search !== '') {
+    whereCondition.sponsorship = {
+      name: { contains: params.search }
+    };
   }
 
   const orderBy: any = {};

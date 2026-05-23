@@ -15,7 +15,10 @@ const sqlFiles = [
 async function executeSqlFile(label: string, relativePath: string) {
     const fullPath = path.join(__dirname, relativePath);
     const sql = fs.readFileSync(fullPath, 'utf8');
-    await prisma.$executeRawUnsafe(sql);
+    const statements = sql.split(';').map(s => s.trim()).filter(s => s.length > 0);
+    for (const statement of statements) {
+        await prisma.$executeRawUnsafe(statement);
+    }
     console.log(`✅ SQL ${label} file executed successfully.`);
 }
 

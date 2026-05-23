@@ -27,9 +27,9 @@ export const doesUserExist = async ( userId: string ) : Promise<boolean> => {
 }
 
 
-export const getOneUser = async ( userId: string ) : Promise<UserResponse> => {
+export const getOneUser = async ( userId: string, baseUrl?: string ) : Promise<UserResponse> => {
     const data: user = await getOneUserRepo( userId);
-    return toUserResponse( data );
+    return toUserResponse( data, baseUrl );
 }
 
 export const updateUserService = async ( data: UpdateUserRequest, userId: string ) : Promise<any> => {

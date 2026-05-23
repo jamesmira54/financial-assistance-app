@@ -123,6 +123,11 @@ export interface ApplySponsorshipResponse {
   sponsorshipRequirement?: SponReq[],
   studentFiles?: StudentFile[]
 }
+export interface PaginatedStudentSponsorshipResponse {
+  data: ApplySponsorshipResponse[];
+  total: number;
+}
+
 export interface SponReq {
   fileId: string,
   fileName: string
@@ -308,10 +313,11 @@ export interface UserListResponse {
   middleName?: string | null;
   lastName: string;
   mobileNumber: string;
-  userId: string; 
+  userId: string;
   email: string;
   userType: string;
   userTypeId: string;
+  profilePhoto?: string | null;
 }
 
 export interface GetAllUsersParams {
@@ -510,6 +516,11 @@ export type  QueryParams = {
   studentId?: string;
   applicationStage?: string;
   applicationStatus?: string;
+  status?: string;
+  academic_year_id?: string;
+  sponsor_id?: string;
+  duration_from?: string;
+  duration_to?: string;
 }
 
 

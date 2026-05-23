@@ -6,3 +6,4 @@ package-lock.json
 prisma/migrations
 uploads
 .claude
+CLAUDE.md

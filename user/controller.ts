@@ -27,9 +27,10 @@ export default () => {
     userAPI.get('/:userId', validateUserId, async (req, res) => {
 
         try {
-            
+
             const { userId } = req.params;
-            const data = await getOneUser( userId );
+            const baseUrl = `${req.protocol}://${req.get('host')}`;
+            const data = await getOneUser( userId, baseUrl );
             ResponseHandler.ok(req, res, data);
         } catch (err) {
             ResponseHandler.invalidRequest(req, res , err.message);

@@ -21,10 +21,11 @@ export default () => {
   });
     
   const fileFilter = (req: any, file: any, cb: any) => {
-    const allowedTypes = /pdf|docx?/;
+    const allowedTypes = /pdf|docx?|png|jpe?g/;
     const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = allowedTypes.test(file.mimetype);
-  
+    const allowedMimes = /application\/pdf|application\/vnd\.openxmlformats|application\/msword|image\/(png|jpe?g)/;
+    const mimetype = allowedMimes.test(file.mimetype);
+
     if (extname && mimetype) {
       return cb(null, true);
     } else {

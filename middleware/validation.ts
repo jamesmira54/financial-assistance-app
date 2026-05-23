@@ -778,6 +778,32 @@ export const validateQueryParams = [
     .matches(/^[a-zA-Z0-9_]+:(asc|desc)$/)
     .withMessage('Sort format must be asc|desc')
     .default('desc'),
+
+  query('status')
+    .optional({ nullable: true, checkFalsy: true })
+    .isIn(['active', 'full'])
+    .withMessage(VALIDATION_MESSAGES.SPONSORSHIP_FILTER_STATUS_INVALID),
+
+  query('academic_year_id')
+    .optional({ nullable: true, checkFalsy: true })
+    .isUUID()
+    .withMessage(VALIDATION_MESSAGES.SPONSORSHIP_FILTER_ACADEMIC_YEAR_ID_INVALID),
+
+  query('sponsor_id')
+    .optional({ nullable: true, checkFalsy: true })
+    .isUUID()
+    .withMessage(VALIDATION_MESSAGES.SPONSORSHIP_FILTER_SPONSOR_ID_INVALID),
+
+  query('duration_from')
+    .optional({ nullable: true, checkFalsy: true })
+    .isISO8601()
+    .withMessage(VALIDATION_MESSAGES.SPONSORSHIP_FILTER_DURATION_FROM_INVALID),
+
+  query('duration_to')
+    .optional({ nullable: true, checkFalsy: true })
+    .isISO8601()
+    .withMessage(VALIDATION_MESSAGES.SPONSORSHIP_FILTER_DURATION_TO_INVALID),
+
   validateErrors
 ];
 
