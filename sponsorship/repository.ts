@@ -276,6 +276,55 @@ export const getAllSponsorshipRepo = async (
   });
 };
 
+export const getAllPublicSponsorshipRepo = async (
+  prisma: any,
+  params: QueryParams
+): Promise<{ data: any[]; total: number }> => {
+
+  const whereCondition: any = {
+    record_status: RecordStatus.ACTIVE,
+  };
+
+  if (params.search && params.search !== "") {
+    whereCondition.name = { contains: params.search };
+  }
+
+  let orderBy: any = {};
+  if (params.sort) {
+    orderBy['created_at'] = params.sort === 'desc' ? 'desc' : 'asc';
+  }
+
+  const [data, total] = await Promise.all([
+    prisma.sponsorship.findMany({
+      where: whereCondition,
+      skip: params.offset,
+      take: params.limit,
+      orderBy,
+      include: {
+        academicYear: {
+          select: { academic_year_start: true, academic_year_end: true }
+        },
+        sponsor: {
+          select: { id: true, first_name: true, middle_name: true, last_name: true }
+        },
+        schools: {
+          include: {
+            school: { select: { id: true, school_name: true } }
+          }
+        },
+        requirements: {
+          include: {
+            fileType: { select: { id: true, name: true } }
+          }
+        }
+      }
+    }),
+    prisma.sponsorship.count({ where: whereCondition })
+  ]);
+
+  return { data, total };
+};
+
 export const getSponsorshipBatchNumber = async(
   id: string,
   prisma: any

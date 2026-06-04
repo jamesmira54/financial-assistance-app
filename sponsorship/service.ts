@@ -31,6 +31,7 @@ import {
   toCriterionCategory,
   toCustomInputCriterion,
   toCustomInputResponse,
+  toPublicSponsorshipResponse,
   toRequiredColumn,
   toSponsorReqModel,
   toSponsorSchoolModel,
@@ -50,6 +51,7 @@ import {
   deleteAllSponsorshipRequirements,
   deleteAllSponsorshipSchools,
   getAllSponsorshipRepo,
+  getAllPublicSponsorshipRepo,
   getAllSponsorshipRequirements,
   getAllSponsorshipSchoolRepo,
   updateSponsorshipRepo,
@@ -117,6 +119,8 @@ import {
   Pairwise,
   PairwiseMatrixEntry,
   PairwiseMatrixResult,
+  PublicSponsorshipResponse,
+  PaginatedPublicSponsorshipResponse,
   QualifiedApplicants,
   QualifiedApplicantsConverted,
   QueryParams,
@@ -439,6 +443,16 @@ export const getAllAvailableSponsorship = async (
 
   const data = await getAllSponsorshipRepo(whereCondition, prisma, params);
   return data.map((item) => toSponsorshipResponse(item));
+};
+
+export const getAllPublicSponsorship = async (
+  params: QueryParams
+): Promise<PaginatedPublicSponsorshipResponse> => {
+  const { data, total } = await getAllPublicSponsorshipRepo(prisma, params);
+  return {
+    data: data.map((item) => toPublicSponsorshipResponse(item)),
+    total,
+  };
 };
 
 export const getOneSponsorship = async (

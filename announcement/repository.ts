@@ -117,6 +117,59 @@ export const getAllAnnouncementData = async ( params: QueryParams, prisma: Prism
     })
 }
 
+export const getAllPublicAnnouncementData = async ( params: QueryParams, prisma: PrismaClient ): Promise<{ data: any[]; total: number }> => {
+
+    let orderBy: any = {};
+    const whereCondition: any = { record_status: RecordStatus.ACTIVE };
+
+    if (params.sort) {
+        orderBy['created_at'] = params.sort === 'desc' ? 'desc' : 'asc';
+    }
+
+    if (params.search && params.search !== "") {
+        whereCondition.OR = [
+            { title: { contains: params.search } },
+            { caption: { contains: params.search } },
+            { content: { contains: params.search } }
+        ];
+    }
+
+    if (params.cityMunId && params.cityMunId !== null) {
+        whereCondition.locations = {
+            some: { citymun_id: params.cityMunId }
+        };
+    }
+
+    const [data, total] = await Promise.all([
+        prisma.announcement.findMany({
+            where: whereCondition,
+            skip: params.offset,
+            take: params.limit,
+            orderBy,
+            select: {
+                id: true,
+                title: true,
+                content: true,
+                caption: true,
+                sponsorship_id: true,
+                locations: {
+                    select: {
+                        citymun: {
+                            select: { id: true, citymun_desc: true }
+                        }
+                    }
+                },
+                files: {
+                    select: { id: true, file_name: true, path: true }
+                }
+            }
+        }),
+        prisma.announcement.count({ where: whereCondition })
+    ]);
+
+    return { data, total };
+}
+
 export const getExistingLocations = async( announcementId: string, prisma: PrismaClient): Promise<{citymun_id: number}[]> => {
     return await prisma.announcementLocation.findMany({
         where: { announcement_id: uuidToBinary(announcementId) },

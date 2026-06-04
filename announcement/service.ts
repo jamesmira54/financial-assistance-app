@@ -1,7 +1,7 @@
 import { announcement, Prisma, PrismaClient } from "@prisma/client";
-import { AnnouncementData, AnnouncementDataMinimal, AnnouncementPayloadString, binaryToUuid, extractUserFromToken, FlattenedAnnouncementData, FlattenedAnnouncementDataMinimal, QueryParams } from "../utils";
+import { AnnouncementData, AnnouncementDataMinimal, AnnouncementPayloadString, binaryToUuid, extractUserFromToken, FlattenedAnnouncementData, FlattenedAnnouncementDataMinimal, PaginatedPublicAnnouncementResponse, QueryParams } from "../utils";
 import { toAnnouncementLocationModel, toAnnouncementMinimalResponse, toAnnouncementModel, toAnnouncementResponse, toUploadedFileModel } from "../utils/converter";
-import { createAnnouncementFileRepo, createAnnouncementLocationRepo, createAnnouncementRepo, deleteAllFilesNotUsed, deleteAllUnusedLocation, deleteAnnouncementRepo, deleteFilesNotUsed, deleteLocationsNotUsed, doesAnnExistGetRepo, doesAnnExistRepo, getAllAnnouncementData, getExistingFiles, getExistingLocations, getOneAnnouncementData, updateAnnouncementFiles, updateAnnouncementLocations, updateAnnouncementRepo } from './repository';
+import { createAnnouncementFileRepo, createAnnouncementLocationRepo, createAnnouncementRepo, deleteAllFilesNotUsed, deleteAllUnusedLocation, deleteAnnouncementRepo, deleteFilesNotUsed, deleteLocationsNotUsed, doesAnnExistGetRepo, doesAnnExistRepo, getAllAnnouncementData, getAllPublicAnnouncementData, getExistingFiles, getExistingLocations, getOneAnnouncementData, updateAnnouncementFiles, updateAnnouncementLocations, updateAnnouncementRepo } from './repository';
 
 
 const prisma = new PrismaClient({
@@ -101,6 +101,14 @@ export const doesAnnExistGet = async ( annId: string ): Promise<boolean> => {
 export const getOneAnnouncement = async( annId: string ): Promise<FlattenedAnnouncementData> => {
     const data: AnnouncementData = await getOneAnnouncementData( annId, prisma );
     return toAnnouncementResponse( data ); 
+}
+
+export const getAllPublicAnnouncement = async ( params: QueryParams ): Promise<PaginatedPublicAnnouncementResponse> => {
+    const { data, total } = await getAllPublicAnnouncementData( params, prisma );
+    return {
+        data: data.map( (e: AnnouncementData) => toAnnouncementResponse( e )),
+        total
+    };
 }
 
 export const getAllAnnouncement = async ( params: QueryParams, authHeader: string ): Promise<FlattenedAnnouncementDataMinimal[]> => {

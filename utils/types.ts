@@ -106,6 +106,30 @@ export interface SponsorshipResponse {
   pairwise: any[],
 }
 
+export interface PublicSponsorshipResponse {
+  id: string,
+  name: string,
+  sponsorName: string,
+  academicYearStart: number,
+  academicYearEnd: number,
+  durationFrom: string,
+  durationTo: string,
+  slot: number,
+  status: string,
+  sponsorshipSchool: { schoolId: string, schoolName: string }[],
+  sponsorshipRequirements: { fileId: string, fileName: string }[],
+}
+
+export interface PaginatedPublicSponsorshipResponse {
+  data: PublicSponsorshipResponse[];
+  total: number;
+}
+
+export interface PaginatedPublicAnnouncementResponse {
+  data: FlattenedAnnouncementData[];
+  total: number;
+}
+
 export interface ApplySponsorshipResponse {
   appId: string,
   sponsorshipId: string,

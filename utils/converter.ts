@@ -1,7 +1,7 @@
 
 import { Prisma, student, user, academicYear, sponsorship, EvaluationStatus, announcement, schedule_type, criterionCategory, DataSource, FormulaType, Preference, customInputCriterion, sponsorshipCriteriaPairwise } from '@prisma/client';
 import { User } from "../authentication/model";
-import { AcademicYearRequest, AcademicYearResponse, AddressResponse, AnnouncementData, AnnouncementDataMinimal, AnnouncementPayloadString, applicants, ApplySponsorshipRequest, ApplySponsorshipResponse, Criteria, CriteriaPairwiseConverted, criterionCategoryResponse, CriterionCategoryWithCriterion, CustomInput, CustomInputResponse, DashboardStats, FileTypeResponse, FlattenedAnnouncementData, FlattenedAnnouncementDataMinimal, GetStudentFile, Pairwise, PairwiseMatrixEntry, PartialStudentUser, QualifiedApplicants, QualifiedApplicantsConverted, RecordStatus, RegisterRequest, RequiredColumns, RoleResponse, ScheduleModified, ScheduleRequest, ScheduleResponse, SchoolPayload, SiblingRequest, SponsorshipApplicantsWithDetails, SponsorshipCriteriaPairwise, SponsorshipCriterionModel, SponsorshipRequest, SponsorshipResponse, SponsorshipStatus, StudentListResponse, StudentRequest, ToSponsorshipCriteriResponse, UpdateStudentStatus, UploadedAnnouncementFile, UserDetailsResponse, UserListResponse, UserResponse } from './types';
+import { AcademicYearRequest, AcademicYearResponse, AddressResponse, AnnouncementData, AnnouncementDataMinimal, AnnouncementPayloadString, applicants, ApplySponsorshipRequest, ApplySponsorshipResponse, Criteria, CriteriaPairwiseConverted, criterionCategoryResponse, CriterionCategoryWithCriterion, CustomInput, CustomInputResponse, DashboardStats, FileTypeResponse, FlattenedAnnouncementData, FlattenedAnnouncementDataMinimal, GetStudentFile, Pairwise, PairwiseMatrixEntry, PartialStudentUser, PublicSponsorshipResponse, QualifiedApplicants, QualifiedApplicantsConverted, RecordStatus, RegisterRequest, RequiredColumns, RoleResponse, ScheduleModified, ScheduleRequest, ScheduleResponse, SchoolPayload, SiblingRequest, SponsorshipApplicantsWithDetails, SponsorshipCriteriaPairwise, SponsorshipCriterionModel, SponsorshipRequest, SponsorshipResponse, SponsorshipStatus, StudentListResponse, StudentRequest, ToSponsorshipCriteriResponse, UpdateStudentStatus, UploadedAnnouncementFile, UserDetailsResponse, UserListResponse, UserResponse } from './types';
 import { binaryToUuid, uuidToBinary } from "./utils";
 import { APPLICATION_STAGE, APPLICATION_STATUS } from './constant';
 
@@ -493,6 +493,28 @@ export function toSponsorshipResponse( payload: any, pairwise: any[] = [] ): Spo
       criterionBId: binaryToUuid(p.sponsorship_criterion_id_b),
       criterionBName: p.sponsorship_criterion_name_b,
       value: p.value,
+    })),
+  };
+}
+
+export function toPublicSponsorshipResponse( payload: any ): PublicSponsorshipResponse {
+  return {
+    id: binaryToUuid(payload.id),
+    name: payload.name,
+    sponsorName: payload.sponsor?.first_name + " " + payload.sponsor?.last_name,
+    academicYearStart: payload.academicYear?.academic_year_start,
+    academicYearEnd: payload.academicYear?.academic_year_end,
+    durationFrom: payload.duration_from ? payload.duration_from.toISOString() : null,
+    durationTo: payload.duration_to ? payload.duration_to.toISOString() : null,
+    slot: payload.slot,
+    status: payload.status,
+    sponsorshipSchool: (payload.schools ?? []).map(item => ({
+      schoolId: binaryToUuid(item.school_id),
+      schoolName: item.school.school_name
+    })),
+    sponsorshipRequirements: (payload.requirements ?? []).map(item => ({
+      fileId: binaryToUuid(item.file_type_id),
+      fileName: item.fileType.name
     })),
   };
 }
