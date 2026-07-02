@@ -1,4 +1,4 @@
-import { APPLICATION_STAGE, APPLICATION_STATUS, AuthPayload, ColumnEnum, error, EvaluationStatus, extractUserFromToken, LoginRequest, RegisterRequest, TableColumnMap, TableEnum, VALIDATION_MESSAGES } from "../utils";
+import { ACADEMIC_STRANDS, APPLICATION_STAGE, APPLICATION_STATUS, AuthPayload, AWARD_HONORS, ColumnEnum, error, EvaluationStatus, extractUserFromToken, LoginRequest, RegisterRequest, STATUSES_REQUIRING_REMARKS, TableColumnMap, TableEnum, VALIDATION_MESSAGES } from "../utils";
 import { NextFunction, Request, RequestHandler, Response } from "express";
 import ResponseHandler from "../response/response";
 import { validationResult, body, param } from "express-validator";
@@ -170,10 +170,23 @@ export const validateStudentRegisterInput = [
 ];
 
 
+// Case-insensitive match against AWARD_HONORS that returns the canonical
+// (title-cased) value so it is stored consistently. Non-matches are returned
+// unchanged so the following .isIn() check reports the error.
+const normalizeAwardHonor = (value: any) => {
+  if (typeof value !== 'string') return value;
+  const trimmed = value.trim();
+  const match = AWARD_HONORS.find(award => award.toLowerCase() === trimmed.toLowerCase());
+  return match ?? trimmed;
+};
+
 const commonValidationMiddleware = [
   body('firstName').isString().withMessage(VALIDATION_MESSAGES.FIRST_NAME_REQUIRED),
   body('lastName').isString().withMessage(VALIDATION_MESSAGES.LAST_NAME_REQUIRED),
-  body('mobileNumber').notEmpty().withMessage(VALIDATION_MESSAGES.MOBILE_NUMBER_INVALID),
+  body('mobileNumber')
+    .trim()
+    .notEmpty().withMessage(VALIDATION_MESSAGES.MOBILE_NUMBER_INVALID)
+    .matches(/^09\d{9}$/).withMessage(VALIDATION_MESSAGES.MOBILE_NUMBER_INVALID),
   body('sex').optional({ nullable: true, checkFalsy: true }).isIn(['Male', 'Female', 'Other']).withMessage(VALIDATION_MESSAGES.SEX_INVALID),
   body('birthdate').optional({ nullable: true, checkFalsy: true }).isDate().withMessage(VALIDATION_MESSAGES.BIRTHDATE_INVALID),
   body('height').optional({ nullable: true, checkFalsy: true }).isFloat({ min: 0 }).withMessage(VALIDATION_MESSAGES.HEIGHT_INVALID),
@@ -188,13 +201,24 @@ const commonValidationMiddleware = [
   body('emergencyContactNumber').optional({ nullable: true, checkFalsy: true }).isString().withMessage(VALIDATION_MESSAGES.EMERGENCY_CONTACT_NUMBER_INVALID),
 
   // G12 Information
-  body('g12AcademicStrand').optional({ nullable: true, checkFalsy: true }).isString().withMessage(VALIDATION_MESSAGES.G12_ACADEMIC_STRAND_REQUIRED),
+  body('g12AcademicStrand')
+    .optional({ nullable: true, checkFalsy: true })
+    .customSanitizer(value => (typeof value === 'string' ? value.trim().toUpperCase() : value))
+    .isIn(ACADEMIC_STRANDS).withMessage(VALIDATION_MESSAGES.G12_ACADEMIC_STRAND_INVALID),
   body('g12ProgramName').optional({ nullable: true, checkFalsy: true }).isString().withMessage(VALIDATION_MESSAGES.G12_PROGRAM_NAME_REQUIRED),
-  body('g12YearOfGraduation').optional({ nullable: true, checkFalsy: true }).isInt().withMessage(VALIDATION_MESSAGES.G12_YEAR_OF_GRADUATION_INVALID),
+  body('g12YearOfGraduation').optional({ nullable: true, checkFalsy: true }).isInt().withMessage(VALIDATION_MESSAGES.G12_YEAR_OF_GRADUATION_INVALID).toInt(),
+  body('g12AwardHonor')
+    .optional({ nullable: true, checkFalsy: true })
+    .customSanitizer(normalizeAwardHonor)
+    .isIn(AWARD_HONORS).withMessage(VALIDATION_MESSAGES.AWARD_HONOR_INVALID),
 
   // College Information
   body('collegeProgramName').optional({ nullable: true, checkFalsy: true }).isString().withMessage(VALIDATION_MESSAGES.COLLEGE_PROGRAM_NAME_REQUIRED),
   body('collegeYearLevel').optional({ nullable: true, checkFalsy: true }).isInt().withMessage(VALIDATION_MESSAGES.COLLEGE_YEAR_LEVEL_INVALID),
+  body('collegeAwardHonor')
+    .optional({ nullable: true, checkFalsy: true })
+    .customSanitizer(normalizeAwardHonor)
+    .isIn(AWARD_HONORS).withMessage(VALIDATION_MESSAGES.AWARD_HONOR_INVALID),
 
   // Father details
   body('fatherFirstName').optional({ nullable: true, checkFalsy: true }).isString().withMessage(VALIDATION_MESSAGES.FATHER_FIRST_NAME_REQUIRED),
@@ -570,8 +594,10 @@ export const validateStudentId = [
 ]
 
 export const validateChangeStudentStatus = [
-  // remarks must exist
+  // remarks is required only for negative / needs-action statuses
+  // (REJECTED, FOLLOW_UP, NOT_QUALIFIED); accepted/positive statuses do not need one.
   body("remarks")
+    .if((value, { req }) => STATUSES_REQUIRING_REMARKS.includes(req.body.appStatus))
     .notEmpty().withMessage(VALIDATION_MESSAGES.REMARKS_REQUIRED),
   // check if sponsorship is on the system
   body("sponsorshipId")
@@ -718,15 +744,21 @@ export const validateSponsorship =  [
       }
       return true;
     }),
+  // An empty or omitted list means the sponsorship applies to ALL schools.
   body("sponsorshipSchool")
-    .isArray({ min: 1 })
-    .withMessage(VALIDATION_MESSAGES.SPONSORSHIP_SCHOOL_REQUIRED)
+    .optional({ nullable: true })
+    .isArray()
+    .withMessage(VALIDATION_MESSAGES.SPONSORSHIP_SCHOOL_INVALID)
     .custom( async (value) => {
+      if (value.length === 0) {
+        return true; // all schools
+      }
+
       if (!value.every((item) => typeof item === "string" && item.trim() !== "")) {
         throw new Error(VALIDATION_MESSAGES.SPONSORSHIP_SCHOOL_INVALID);
       }
-      
-      const invalidSchoolId: boolean = await checkIfInvalidSchoolId( value ); 
+
+      const invalidSchoolId: boolean = await checkIfInvalidSchoolId( value );
       if (invalidSchoolId) {
         console.log("Invalid school here");
         throw new Error(VALIDATION_MESSAGES.SPONSORSHIP_SCHOOL_INVALID);

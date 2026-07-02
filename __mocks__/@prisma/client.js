@@ -10,6 +10,7 @@ const actual = jest.requireActual('@prisma/client');
 const mockPrisma = {
   sponsorship: { findMany: jest.fn(), count: jest.fn() },
   announcement: { findMany: jest.fn(), count: jest.fn() },
+  student: { findFirst: jest.fn() },
 };
 
 module.exports = {

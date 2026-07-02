@@ -159,7 +159,9 @@ model student {
   mother_maiden_last_name   String? @db.VarChar(255)
   mother_maiden_first_name  String? @db.VarChar(255)
   mother_maiden_middle_name String? @db.VarChar(255)
-  mother_maiden_extension   String? @db.VarChar(255)
+  // Retained in the DB for historical data; no longer used by the app. @ignore keeps the
+  // column (migrations will not drop it) while excluding it from the generated Prisma Client.
+  mother_maiden_extension   String? @db.VarChar(255) @ignore
   mother_occupation         String? @db.VarChar(255)
   mother_income             Float?  @db.Float
   mother_mobile_number      String? @db.VarChar(15)

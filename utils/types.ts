@@ -304,7 +304,6 @@ export interface StudentRequest {
   motherFirstName?: string;
   motherMiddleName?: string;
   motherLastName?: string;
-  motherExtension?: string;
   motherOccupation?: string;
   motherIncome?: number;
   motherMobileNumber?: string;
@@ -426,7 +425,6 @@ export interface StudentListResponse {
   motherMaidenLastName: string;
   motherMaidenFirstName: string;
   motherMaidenMiddleName?: string;
-  motherMaidenExtension?: string;
   motherOccupation: string;
   motherIncome?: number;
   motherMobileNumber: string;

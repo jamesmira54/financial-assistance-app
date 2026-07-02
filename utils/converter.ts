@@ -5,6 +5,32 @@ import { AcademicYearRequest, AcademicYearResponse, AddressResponse, Announcemen
 import { binaryToUuid, uuidToBinary } from "./utils";
 import { APPLICATION_STAGE, APPLICATION_STATUS } from './constant';
 
+/**
+ * Coerce a request value to an integer for Prisma Int columns.
+ * Request bodies may deliver numeric fields as strings (e.g. "2025"); Prisma
+ * rejects those with "Expected Int ... provided String". Returns null for
+ * empty/absent/non-numeric input so nullable columns stay null instead of NaN.
+ */
+function toIntOrNull(value: unknown): number | null {
+  if (value === undefined || value === null || String(value).trim() === '') {
+    return null;
+  }
+  const parsed = Number(value);
+  return Number.isNaN(parsed) ? null : Math.trunc(parsed);
+}
+
+/**
+ * Coerce a request value to a float for Prisma Float columns. Same rationale as
+ * toIntOrNull but preserves decimals (income, gwa, height, weight).
+ */
+function toFloatOrNull(value: unknown): number | null {
+  if (value === undefined || value === null || String(value).trim() === '') {
+    return null;
+  }
+  const parsed = Number(value);
+  return Number.isNaN(parsed) ? null : parsed;
+}
+
 export function convertStudentResponseToStudent(response: StudentRequest, userId: string): Prisma.studentUncheckedCreateInput  {
   return {
     user_id: uuidToBinary(response.userId),
@@ -15,30 +41,30 @@ export function convertStudentResponseToStudent(response: StudentRequest, userId
     sex: response.sex,
     place_of_birth: response.placeOfBirth,
     birthdate: response.birthdate ? new Date(response.birthdate) : null,
-    height: response.height,
-    weight: response.weight,
+    height: toFloatOrNull(response.height),
+    weight: toFloatOrNull(response.weight),
     permanent_street: response.permanentStreet,
-    permanent_brg_id: response.permanentBrgId,
-    permanent_citymun_id: response.permanentCitymunId,
-    permanent_province_id: response.permanentProvinceId,
-    permanent_region_id: response.permanentRegionId,
-    permanent_zip_code: response.permanentZipCode,
+    permanent_brg_id: toIntOrNull(response.permanentBrgId),
+    permanent_citymun_id: toIntOrNull(response.permanentCitymunId),
+    permanent_province_id: toIntOrNull(response.permanentProvinceId),
+    permanent_region_id: toIntOrNull(response.permanentRegionId),
+    permanent_zip_code: toIntOrNull(response.permanentZipCode),
     permanent_country: response.permanentCountry,
     current_street: response.currentStreet,
-    current_brg_id: response.currentBrgId,
-    current_citymun_id: response.currentCitymunId,
-    current_province_id: response.currentProvinceId,
-    current_region_id: response.currentRegionId,
-    current_zip_code: response.currentZipCode,
+    current_brg_id: toIntOrNull(response.currentBrgId),
+    current_citymun_id: toIntOrNull(response.currentCitymunId),
+    current_province_id: toIntOrNull(response.currentProvinceId),
+    current_region_id: toIntOrNull(response.currentRegionId),
+    current_zip_code: toIntOrNull(response.currentZipCode),
     current_country: response.currentCountry,
     g12_academic_strand: response.g12AcademicStrand,
     g12_program_name: response.g12ProgramName,
     g12_award_honor: response.g12AwardHonor,
     g12_organization: response.g12Organization,
-    g12_year_of_graduation: response.g12YearOfGraduation,
+    g12_year_of_graduation: toIntOrNull(response.g12YearOfGraduation),
     g12_school_id: response.g12SchoolId ?  uuidToBinary(response.g12SchoolId) : null,
     college_program_name: response.collegeProgramName,
-    college_year_level: response.collegeYearLevel,
+    college_year_level: toIntOrNull(response.collegeYearLevel),
     college_award_honor: response.collegeAwardHonor,
     college_organization: response.collegeOrganization,
     college_school_id: response.collegeSchoolId ? uuidToBinary(response.collegeSchoolId) : null,
@@ -59,24 +85,23 @@ export function convertStudentResponseToStudent(response: StudentRequest, userId
     father_last_name: response.fatherLastName,
     father_extension: response.fatherExtension,
     father_occupation: response.fatherOccupation,
-    father_income: response.fatherIncome,
+    father_income: toFloatOrNull(response.fatherIncome),
     father_mobile_number: response.fatherMobileNumber,
     mother_maiden_first_name: response.motherFirstName,
     mother_maiden_middle_name: response.motherMiddleName,
     mother_maiden_last_name: response.motherLastName,
-    mother_maiden_extension: response.motherExtension,
     mother_occupation: response.motherOccupation,
-    mother_income: response.motherIncome,
+    mother_income: toFloatOrNull(response.motherIncome),
     mother_mobile_number: response.motherMobileNumber,
     guardian_first_name: response.guardianFirstName,
     guardian_middle_name: response.guardianMiddleName,
     guardian_last_name: response.guardianLastName,
     guardian_extension: response.guardianExtension,
     guardian_occupation: response.guardianOccupation,
-    guardian_income: response.guardianIncome,
+    guardian_income: toFloatOrNull(response.guardianIncome),
     guardian_mobile_number: response.guardianMobileNumber,
-    number_of_siblings: response.numberOfSiblings,
-    gwa: response.gwa,
+    number_of_siblings: toIntOrNull(response.numberOfSiblings),
+    gwa: toFloatOrNull(response.gwa),
     created_by: uuidToBinary(userId),
     updated_by: uuidToBinary(userId),
     updated_at: new Date(),
@@ -225,7 +250,6 @@ export function toStudentResponse(item: any ): StudentListResponse {
     motherMaidenLastName: item.mother_maiden_last_name,
     motherMaidenFirstName: item.mother_maiden_first_name,
     motherMaidenMiddleName: item.mother_maiden_middle_name || undefined,
-    motherMaidenExtension: item.mother_maiden_extension || undefined,
     motherOccupation: item.mother_occupation,
     motherIncome: item.mother_income || undefined,
     motherMobileNumber: item.mother_mobile_number,

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { ResponseHandler } from "../response";
-import { getQueryParams, GetStudentFile, QueryParams, StudentRequest } from "../utils";
+import { ACADEMIC_STRANDS, AWARD_HONORS, getQueryParams, GetStudentFile, QueryParams, StudentRequest } from "../utils";
 import { getAllStudent, getOneStudent, getStudentFiles, updateStudentService } from "./service";
 import { validateStudentRegistration, validateUpdateStudent, validateGetOneStudent, validateStudentId, validateQueryParams } from "../middleware/validation";
 
@@ -37,7 +37,16 @@ export default () => {
         }
     });
 
-    studentAPI.get('/:studentId', validateStudentId, async (req, res) => { 
+    // Static lookups. Registered before '/:studentId' so they are not captured as a studentId param.
+    studentAPI.get('/academic-strands', async (req, res) => {
+        ResponseHandler.ok(req, res, ACADEMIC_STRANDS);
+    });
+
+    studentAPI.get('/award-honors', async (req, res) => {
+        ResponseHandler.ok(req, res, AWARD_HONORS);
+    });
+
+    studentAPI.get('/:studentId', validateStudentId, async (req, res) => {
         try {
 
             const { studentId } = req.params;

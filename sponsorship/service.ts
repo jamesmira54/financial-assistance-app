@@ -422,23 +422,27 @@ export const getAllAvailableSponsorship = async (
   studentId: string,
   params: QueryParams
 ): Promise<SponsorshipResponse[]> => {
-  let whereCondition: any = {};
-
   const studentCollegeSchoolID = await getStudentCollegeSchoolRepo(studentId);
 
-  if (!studentCollegeSchoolID || studentCollegeSchoolID === null) {
-    return [];
-  }
-
-  whereCondition = {
-    record_status: RecordStatus.ACTIVE,
-    schools: {
-      some: {
-        school_id: {
-          equals: uuidToBinary(studentCollegeSchoolID),
+  // A sponsorship with no schools attached applies to ALL schools, so it is visible to every
+  // student (even one without a college school set). A student with a college school also sees
+  // sponsorships scoped to that school.
+  const orClauses: any[] = [{ schools: { none: {} } }];
+  if (studentCollegeSchoolID) {
+    orClauses.push({
+      schools: {
+        some: {
+          school_id: {
+            equals: uuidToBinary(studentCollegeSchoolID),
+          },
         },
       },
-    },
+    });
+  }
+
+  const whereCondition: any = {
+    record_status: RecordStatus.ACTIVE,
+    OR: orClauses,
   };
 
   const data = await getAllSponsorshipRepo(whereCondition, prisma, params);

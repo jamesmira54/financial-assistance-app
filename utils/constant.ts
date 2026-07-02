@@ -1,3 +1,14 @@
+// Allowed Senior High School academic strands for g12AcademicStrand.
+export const ACADEMIC_STRANDS = ['ABM', 'STEM', 'HUMSS', 'GAS', 'TVL'] as const;
+
+// Allowed award/honor distinctions for g12AwardHonor and collegeAwardHonor.
+export const AWARD_HONORS = [
+  'With Highest Honor',
+  'With High Honor',
+  'With Honor',
+  'Sports Excellence Award',
+] as const;
+
 export const ERROR_MESSAGES = {
     INVALID_REQUEST: 'The request is invalid.',
     NOT_FOUND: 'Resource not found',
@@ -48,6 +59,15 @@ export enum APPLICATION_STATUS {
     // Final Selection Stage Statuses
     AWARDED = "AWARDED",
 }
+
+// Remarks are only required when the coordinator gives a negative / needs-action
+// decision. Positive statuses (COMPLETE/accepted, APPROVED, RANKED, AWARDED,
+// PENDING_*) do not require a reason.
+export const STATUSES_REQUIRING_REMARKS: APPLICATION_STATUS[] = [
+    APPLICATION_STATUS.REJECTED,
+    APPLICATION_STATUS.FOLLOW_UP,
+    APPLICATION_STATUS.NOT_QUALIFIED,
+];
 
 export enum EvaluationStatus {
     PENDING = "PENDING",
@@ -118,7 +138,7 @@ export const VALIDATION_MESSAGES = {
     LAST_NAME_REQUIRED: 'Last name is required and should be a string',
     EMAIL_INVALID: 'Invalid email address',
     USERNAME_INVALID: 'Invalid Username',
-    MOBILE_NUMBER_INVALID: 'Invalid mobile number',
+    MOBILE_NUMBER_INVALID: 'Mobile number must be 11 digits and start with 09',
     SEX_INVALID: 'Sex must be Male, Female, or Other',
     BIRTHDATE_INVALID: 'Birthdate must be a valid date',
     HEIGHT_INVALID: 'Height must be a positive number',
@@ -144,6 +164,8 @@ export const VALIDATION_MESSAGES = {
     EMERGENCY_CONTACT_NAME_REQUIRED: 'Emergency contact name is required',
     EMERGENCY_CONTACT_NUMBER_INVALID: 'Emergency contact number must be a valid phone number',
     G12_ACADEMIC_STRAND_REQUIRED: 'G12 academic strand is required',
+    G12_ACADEMIC_STRAND_INVALID: 'G12 academic strand must be one of: ABM, STEM, HUMSS, GAS, TVL',
+    AWARD_HONOR_INVALID: 'award/honor must be one of: With Highest Honor, With High Honor, With Honor, Sports Excellence Award',
     G12_PROGRAM_NAME_REQUIRED: 'G12 program name is required',
     G12_YEAR_OF_GRADUATION_INVALID: 'G12 year of graduation must be a valid year',
     G12_SCHOOL_ID_INVALID: 'G12 school ID must be an integer',

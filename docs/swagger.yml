@@ -3905,6 +3905,10 @@ components:
           example: 1
         sponsorshipSchool:
           type: array
+          description: >
+            List of school IDs this sponsorship is scoped to. Optional - an empty array or an
+            omitted field means the sponsorship applies to ALL schools (current and future) and
+            is visible to every student.
           items:
             type: string
             example: a2815764-f067-11ef-ae8c-f4b520508eb0
@@ -4260,13 +4264,15 @@ components:
           example: fa8d0ba7-3bd8-4a30-8127-82ca571d1bd0
         grade12Strand:
           type: string
+          enum: [ABM, STEM, HUMSS, GAS, TVL]
           example: STEM
         grade12ProgramName:
           type: string
           example: Default
         grade12Award:
           type: string
-          example: Valivecturian
+          enum: [With Highest Honor, With High Honor, With Honor, Sports Excellence Award]
+          example: With Highest Honor
         grade12Organization:
           type: string
           example: APS
@@ -4281,7 +4287,8 @@ components:
           example: 2
         collegeAwardHonor:
           type: string
-          example: Dean's Lister
+          enum: [With Highest Honor, With High Honor, With Honor, Sports Excellence Award]
+          example: With Honor
         collegeOrganization:
           type: string
           example: Computer Society
@@ -4327,9 +4334,6 @@ components:
         motherLastName:
           type: string
           example: Smith
-        motherExtension:
-          type: string
-          example: ''
         motherOccupation:
           type: string
           example: Teacher
