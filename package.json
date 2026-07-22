@@ -8,7 +8,8 @@
     "prisma-seed": "ts-node prisma/seeders/seed.ts",
     "prisma-sql": "ts-node prisma/seeders/sqlSeeder.ts",
     "prisma-criterion": "ts-node prisma/seeders/criterionSeeder.ts",
-    "prisma-modules": "ts-node prisma/seeders/modulePermissionSeed.ts"
+    "prisma-modules": "ts-node prisma/seeders/modulePermissionSeed.ts",
+    "db-reconcile": "ts-node scripts/reconcile-db.ts"
   },
   "keywords": [],
   "author": "",

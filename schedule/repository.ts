@@ -1,4 +1,4 @@
-import { Prisma, PrismaClient, schedule, schedule_type } from "@prisma/client";
+import { Prisma, PrismaClient, schedule, schedule_type, examination_type } from "@prisma/client";
 import { QueryParams, RecordStatus, ScheduleModified, uuidToBinary } from "../utils";
 
 export const save = async ( data: Prisma.scheduleUncheckedCreateInput ,prisma: PrismaClient ): Promise<schedule> => {
@@ -20,7 +20,10 @@ export const get = async ( id: string ,prisma: PrismaClient ): Promise<ScheduleM
                 id: true,
                 sponsorship_id: true,
                 batch_no: true,
+                batch_code: true,
                 schedule_type: true,
+                examination_type: true,
+                proctor_interviewer: true,
                 location: true,
                 start_date: true,
                 end_date: true,
@@ -45,14 +48,30 @@ export const all = async ( params: QueryParams, creatorId: string = "" ,prisma: 
     }
 
     if (params.search && params.search !== "") {
-        whereCondition.OR = [
-            { batch_no: { contains: params.search } },
-            { location: { contains: params.search } },
-            { schedule_type: { contains: params.search } },
-            { schedule_quota: { contains: params.search } },
-            { start_date: { contains: params.search } },
-            { end_date: { contains: params.search } }
+        const search = params.search;
+        // `contains` is a string-only operator. Only apply it to string columns; use typed
+        // equality for numeric/enum columns, and only when the search term is that type.
+        const or: any[] = [
+            { location: { contains: search } },
+            { batch_code: { contains: search } },
+            { proctor_interviewer: { contains: search } },
         ];
+
+        const asNumber = Number(search);
+        if (!Number.isNaN(asNumber)) {
+            or.push({ batch_no: { equals: asNumber } });
+            or.push({ schedule_quota: { equals: asNumber } });
+        }
+
+        const upper = search.toUpperCase();
+        if (upper === 'TEST' || upper === 'INTERVIEW') {
+            or.push({ schedule_type: { equals: upper as schedule_type } });
+        }
+        if (upper === 'ONSITE' || upper === 'ONLINE') {
+            or.push({ examination_type: { equals: upper as examination_type } });
+        }
+
+        whereCondition.OR = or;
     }
 
     if(params.mine) {
@@ -65,7 +84,10 @@ export const all = async ( params: QueryParams, creatorId: string = "" ,prisma: 
                 id: true,
                 sponsorship_id: true,
                 batch_no: true,
+                batch_code: true,
                 schedule_type: true,
+                examination_type: true,
+                proctor_interviewer: true,
                 location: true,
                 start_date: true,
                 end_date: true,

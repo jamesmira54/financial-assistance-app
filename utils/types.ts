@@ -64,6 +64,7 @@ export interface SponsorshipRequest {
   limit: number,
   slot: number,
   fundAllocation: number,
+  allowancePerStudent: number,
   sponsorshipSchool: string[],
   sponsorshipRequirements: string[],
 }
@@ -97,6 +98,7 @@ export interface SponsorshipResponse {
   limit: number,
   slot: number,
   fundAllocation: number,
+  allowancePerStudent: number | null,
   status: string,
   studentCount: number,
   sponsorshipSchool: any[],
@@ -281,14 +283,13 @@ export interface StudentRequest {
   isPwd?: boolean;
   emergencyContactName?: string;
   emergencyContactNumber?: string;
-  emergencyContactName2?: string;
-  emergencyContactNumber2?: string;
+  emergencyContactRelationship?: string;
   g12AcademicStrand?: string;
   g12ProgramName?: string;
   g12AwardHonor?: string;
   g12Organization?: string;
   g12YearOfGraduation?: number;
-  g12SchoolId?: string;
+  g12SchoolName?: string;
   collegeProgramName?: string;
   collegeYearLevel?: number;
   collegeAwardHonor?: string;
@@ -402,12 +403,12 @@ export interface StudentListResponse {
   isPwd: boolean;
   emergencyContactName: string;
   emergencyContactNumber: string;
+  emergencyContactRelationship?: string;
   g12AcademicStrand?: string;
   g12ProgramName?: string;
   g12AwardHonor?: string;
   g12Organization?: string;
   g12YearOfGraduation?: number;
-  g12SchoolId?: string;
   g12SchoolName?: string;
   collegeProgramName?: string;
   collegeYearLevel?: number;
@@ -436,8 +437,6 @@ export interface StudentListResponse {
   guardianIncome?: number;
   guardianMobileNumber: string;
   numberOfSiblings: number;
-  emergencyContactName2: string;
-  emergencyContactNumber2: string;
   gwa?: number;
   siblings: SiblingResponse[];
 }
@@ -635,7 +634,10 @@ export type SawScoreType = {
 export type ScheduleRequest = {
   sponsorshipId: string;
   batchNo: number;
+  batchCode: string;
   scheduleType: string;
+  examinationType: string;
+  proctorInterviewer: string;
   location: string;
   startDate: string;
   endDate: string;
@@ -647,7 +649,10 @@ export type ScheduleResponse = {
   sponsorshipId: string;
   sponsorshipName: string;
   batchNo: number;
+  batchCode: string | null;
   scheduleType: string;
+  examinationType: string | null;
+  proctorInterviewer: string | null;
   location: string;
   startDate: string;
   endDate: string;
@@ -658,7 +663,10 @@ export type ScheduleModified = {
   id: Uint8Array;
   sponsorship_id: Uint8Array;
   batch_no: number;
+  batch_code: string | null;
   schedule_type: string;
+  examination_type: string | null;
+  proctor_interviewer: string | null;
   location: string;
   start_date: Date;
   end_date: Date;

@@ -149,7 +149,6 @@ export const getAllStudentRepo = async ( params: QueryParams ): Promise<any> => 
         current_citynum: { select: { citymun_desc: true, citymun_code: true } },
         current_province: { select: { prov_desc: true, prov_code: true } },
         current_region: { select: { reg_desc: true, reg_code: true } },
-        g12_school: { select: { school_name: true } },
         college_school: { select: { school_name: true } },
       },
     });
@@ -220,7 +219,6 @@ export const getOneStudentRepo = async (studentId: string): Promise<any> => {
         current_citynum: { select: { citymun_desc: true, citymun_code: true } },
         current_province: { select: { prov_desc: true, prov_code: true } },
         current_region: { select: { reg_desc: true, reg_code: true } },
-        g12_school: { select: { school_name: true } },
         college_school: { select: { school_name: true } },
       },
     });

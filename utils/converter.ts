@@ -1,5 +1,5 @@
 
-import { Prisma, student, user, academicYear, sponsorship, EvaluationStatus, announcement, schedule_type, criterionCategory, DataSource, FormulaType, Preference, customInputCriterion, sponsorshipCriteriaPairwise } from '@prisma/client';
+import { Prisma, student, user, academicYear, sponsorship, EvaluationStatus, announcement, schedule_type, examination_type, criterionCategory, DataSource, FormulaType, Preference, customInputCriterion, sponsorshipCriteriaPairwise } from '@prisma/client';
 import { User } from "../authentication/model";
 import { AcademicYearRequest, AcademicYearResponse, AddressResponse, AnnouncementData, AnnouncementDataMinimal, AnnouncementPayloadString, applicants, ApplySponsorshipRequest, ApplySponsorshipResponse, Criteria, CriteriaPairwiseConverted, criterionCategoryResponse, CriterionCategoryWithCriterion, CustomInput, CustomInputResponse, DashboardStats, FileTypeResponse, FlattenedAnnouncementData, FlattenedAnnouncementDataMinimal, GetStudentFile, Pairwise, PairwiseMatrixEntry, PartialStudentUser, PublicSponsorshipResponse, QualifiedApplicants, QualifiedApplicantsConverted, RecordStatus, RegisterRequest, RequiredColumns, RoleResponse, ScheduleModified, ScheduleRequest, ScheduleResponse, SchoolPayload, SiblingRequest, SponsorshipApplicantsWithDetails, SponsorshipCriteriaPairwise, SponsorshipCriterionModel, SponsorshipRequest, SponsorshipResponse, SponsorshipStatus, StudentListResponse, StudentRequest, ToSponsorshipCriteriResponse, UpdateStudentStatus, UploadedAnnouncementFile, UserDetailsResponse, UserListResponse, UserResponse } from './types';
 import { binaryToUuid, uuidToBinary } from "./utils";
@@ -62,7 +62,7 @@ export function convertStudentResponseToStudent(response: StudentRequest, userId
     g12_award_honor: response.g12AwardHonor,
     g12_organization: response.g12Organization,
     g12_year_of_graduation: toIntOrNull(response.g12YearOfGraduation),
-    g12_school_id: response.g12SchoolId ?  uuidToBinary(response.g12SchoolId) : null,
+    g12_school_name: response.g12SchoolName,
     college_program_name: response.collegeProgramName,
     college_year_level: toIntOrNull(response.collegeYearLevel),
     college_award_honor: response.collegeAwardHonor,
@@ -78,8 +78,7 @@ export function convertStudentResponseToStudent(response: StudentRequest, userId
     is_pwd: response.isPwd,
     emergency_contact_name: response.emergencyContactName,
     emergency_contact_number: response.emergencyContactNumber,
-    emergency_contact_name2: response.emergencyContactName2,
-    emergency_contact_number2: response.emergencyContactNumber2,
+    emergency_contact_relationship: response.emergencyContactRelationship,
     father_first_name: response.fatherFirstName,
     father_middle_name: response.fatherMiddleName,
     father_last_name: response.fatherLastName,
@@ -225,15 +224,13 @@ export function toStudentResponse(item: any ): StudentListResponse {
     isPwd: item.is_pwd,
     emergencyContactName: item.emergency_contact_name,
     emergencyContactNumber: item.emergency_contact_number,
-    emergencyContactName2: item.emergency_contact_name2,
-    emergencyContactNumber2: item.emergency_contact_number2,
+    emergencyContactRelationship: item.emergency_contact_relationship,
     g12AcademicStrand: item.g12_academic_strand,
     g12ProgramName: item.g12_program_name,
     g12AwardHonor: item.g12_award_honor,
     g12Organization: item.g12_organization,
     g12YearOfGraduation: item.g12_year_of_graduation,
-    g12SchoolId: item.g12_school_id ?  binaryToUuid(item.g12_school_id) : item.g12_school_id,
-    g12SchoolName: item.g12_school?.school_name,
+    g12SchoolName: item.g12_school_name,
     collegeProgramName: item.college_program_name,
     collegeYearLevel: item.college_year_level,
     collegeAwardHonor: item.college_award_honor,
@@ -380,6 +377,7 @@ export function toSponsorshipModel( payload: SponsorshipRequest, userId:string):
     limit: payload.limit,
     slot: payload.slot,
     fund_allocation: payload.fundAllocation,
+    allowance_per_student: payload.allowancePerStudent,
     status: SponsorshipStatus.ACTIVE,
     updated_at:  new Date,
     created_by: uuidToBinary(userId),
@@ -479,6 +477,7 @@ export function toSponsorshipResponse( payload: any, pairwise: any[] = [] ): Spo
     limit: payload.limit,
     slot: payload.slot,
     fundAllocation: payload.fund_allocation,
+    allowancePerStudent: payload.allowance_per_student ?? null,
     status: payload.status,
     studentCount: payload._count?.sponsorshipApplication ?? 0,
     sponsorshipSchool: (payload.schools ?? []).map(item => ({
@@ -647,7 +646,10 @@ export const toScheduleModel = ( data: ScheduleRequest, creatorId: string, isEdi
   return {
     sponsorship_id: uuidToBinary( data.sponsorshipId ),
     batch_no: data.batchNo,
+    batch_code: data.batchCode,
     schedule_type: data.scheduleType as schedule_type,
+    examination_type: data.examinationType as examination_type,
+    proctor_interviewer: data.proctorInterviewer,
     location: data.location,
     start_date: data.startDate,
     end_date: data.endDate,
@@ -663,11 +665,14 @@ export const convertedScheduleResponse = ( data: ScheduleModified ): ScheduleRes
     sponsorshipId: binaryToUuid( data.sponsorship_id ),
     sponsorshipName: data.sponsorship?.name ?? null,
     batchNo: data.batch_no,
+    batchCode: data.batch_code ?? null,
     location: data.location,
     startDate: data.start_date.toISOString(),
     endDate: data.end_date.toISOString(),
     scheduleQuota: data.schedule_quota,
-    scheduleType: data.schedule_type
+    scheduleType: data.schedule_type,
+    examinationType: data.examination_type ?? null,
+    proctorInterviewer: data.proctor_interviewer ?? null
   }
 }
 

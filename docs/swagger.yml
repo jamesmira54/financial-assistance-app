@@ -3900,6 +3900,9 @@ components:
         fundAllocation:
           type: number
           example: 1000
+        allowancePerStudent:
+          type: number
+          example: 1500
         status:
           type: integer
           example: 1
@@ -4259,9 +4262,10 @@ components:
         pwd:
           type: boolean
           example: false
-        grade12SchoolId:
+        g12SchoolName:
           type: string
-          example: fa8d0ba7-3bd8-4a30-8127-82ca571d1bd0
+          description: Free-text G12 school name typed by the student (no dropdown / no existence check).
+          example: Davao City National High School
         grade12Strand:
           type: string
           enum: [ABM, STEM, HUMSS, GAS, TVL]
@@ -4295,13 +4299,13 @@ components:
         collegeSchoolId:
           type: string
           example: fa8d0ba7-3bd8-4a30-8127-82ca571d1bd0
-        emergencyFullName:
+        emergencyContactName:
           type: string
           example: Jane Doe
-        emergencyMobileNumber:
+        emergencyContactNumber:
           type: string
           example: '+639938172631'
-        emergencyRelationship:
+        emergencyContactRelationship:
           type: string
           example: Sister
         fatherFirstName:
@@ -5026,6 +5030,10 @@ components:
         fundAllocation:
           type: number
           example: 1000
+        allowancePerStudent:
+          type: number
+          nullable: true
+          example: 1500
         status:
           type: string
           example: active
@@ -5099,9 +5107,21 @@ components:
         batchNo:
           type: integer
           example: 1
+        batchCode:
+          type: string
+          example: BATCH-2026-A
         scheduleType:
           type: string
-          example: exam/interview
+          enum: [TEST, INTERVIEW]
+          description: "UI label 'Exam' maps to stored value TEST."
+          example: TEST
+        examinationType:
+          type: string
+          enum: [ONSITE, ONLINE]
+          example: ONSITE
+        proctorInterviewer:
+          type: string
+          example: Prof. Reyes
         location:
           type: string
           example: school

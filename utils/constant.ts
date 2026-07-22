@@ -56,9 +56,23 @@ export enum APPLICATION_STATUS {
     RANKED = "RANKED",
     NOT_QUALIFIED = "NOT_QUALIFIED",
 
-    // Final Selection Stage Statuses
+    // Final Selection Stage Statuses. AWARDED is also the "Active" grantee
+    // state surfaced by the Monitoring List (Awarded == Active).
     AWARDED = "AWARDED",
+
+    // Post-award Monitoring (grantee lifecycle) Statuses
+    DELISTED = "DELISTED",
+    GRADUATED = "GRADUATED",
 }
+
+// The grantee base set surfaced by the Monitoring List. A student becomes a
+// grantee the moment they are AWARDED (which the list presents as "Active") and
+// stays a grantee through delisting/graduation.
+export const GRANTEE_STATUSES: APPLICATION_STATUS[] = [
+    APPLICATION_STATUS.AWARDED,
+    APPLICATION_STATUS.DELISTED,
+    APPLICATION_STATUS.GRADUATED,
+];
 
 // Remarks are only required when the coordinator gives a negative / needs-action
 // decision. Positive statuses (COMPLETE/accepted, APPROVED, RANKED, AWARDED,
@@ -134,6 +148,10 @@ export const TableColumnMap: Record<TableEnum, ColumnEnum[]> = {
 };
 
 export const VALIDATION_MESSAGES = {
+    GRANTEE_NOT_FOUND: 'Grantee application not found',
+    GRANTEE_NOT_ACTIVE: 'Only an active grantee can be delisted or graduated',
+    INVALID_GRANTEE_STATUS: 'Grantee status must be DELISTED or GRADUATED',
+    DELIST_REMARKS_REQUIRED: 'Remarks are required when delisting a grantee',
     FIRST_NAME_REQUIRED: 'First name is required and should be a string',
     LAST_NAME_REQUIRED: 'Last name is required and should be a string',
     EMAIL_INVALID: 'Invalid email address',
@@ -163,6 +181,7 @@ export const VALIDATION_MESSAGES = {
     CURRENT_REGION_ID_NOT_FOUND: 'Current region ID not found in the system',
     EMERGENCY_CONTACT_NAME_REQUIRED: 'Emergency contact name is required',
     EMERGENCY_CONTACT_NUMBER_INVALID: 'Emergency contact number must be a valid phone number',
+    EMERGENCY_CONTACT_RELATIONSHIP_INVALID: 'Emergency contact relationship must be a string',
     G12_ACADEMIC_STRAND_REQUIRED: 'G12 academic strand is required',
     G12_ACADEMIC_STRAND_INVALID: 'G12 academic strand must be one of: ABM, STEM, HUMSS, GAS, TVL',
     AWARD_HONOR_INVALID: 'award/honor must be one of: With Highest Honor, With High Honor, With Honor, Sports Excellence Award',
@@ -170,6 +189,7 @@ export const VALIDATION_MESSAGES = {
     G12_YEAR_OF_GRADUATION_INVALID: 'G12 year of graduation must be a valid year',
     G12_SCHOOL_ID_INVALID: 'G12 school ID must be an integer',
     G12_SCHOOL_ID_NOT_FOUND: 'G12 school ID not found in the system',
+    G12_SCHOOL_NAME_INVALID: 'G12 school name must be a string',
     COLLEGE_PROGRAM_NAME_REQUIRED: 'College program name is required',
     COLLEGE_YEAR_LEVEL_INVALID: 'College year level must be an integer',
     COLLEGE_SCHOOL_ID_INVALID: 'College school ID must be an integer',
@@ -261,6 +281,7 @@ export const VALIDATION_MESSAGES = {
     SPONSORSHIP_REQUIREMENTS_REQUIRED: "sponsorshipRequirements is required",
     SPONSORSHIP_REQUIREMENTS_INVALID: "One of the file id in the requirements is invalid or does not exist in the system",
     SPONSORSHIP_FUND_ALLOCATION_INVALID: "fundAllocation must be greater than 0",
+    SPONSORSHIP_ALLOWANCE_PER_STUDENT_INVALID: "allowancePerStudent must be greater than 0",
     SPONSORSHIP_FILTER_STATUS_INVALID: "status must be 'active' or 'full'",
     SPONSORSHIP_FILTER_ACADEMIC_YEAR_ID_INVALID: "academic_year_id must be a valid UUID",
     SPONSORSHIP_FILTER_SPONSOR_ID_INVALID: "sponsor_id must be a valid UUID",
@@ -300,6 +321,10 @@ export const VALIDATION_MESSAGES = {
     LOCATION_REQUIRED: "location is required",
     SCHEDULE_QUOTA_REQUIRED: "scheduleQuota is required",
     SCHEDULE_QUOTA_INVALID: "scheduleQuota must be a number greater than or equal to 1",
+    BATCH_CODE_REQUIRED: "batchCode is required",
+    EXAMINATION_TYPE_REQUIRED: "examinationType is required",
+    EXAMINATION_TYPE_INVALID: "examinationType must be either ONSITE or ONLINE",
+    PROCTOR_INTERVIEWER_REQUIRED: "proctorInterviewer is required",
     START_DATE_REQUIRED: "startDate is required",
     START_DATE_INVALID: "startDate must be a valid datetime",
     END_DATE_REQUIRED: "endDate is required",

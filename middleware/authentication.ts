@@ -24,6 +24,15 @@ export const allowRoles = (...allowedRoles: string[]) => {
 
         const authHeader: string = req.headers.authorization;
         const userDetails: AuthPayload = extractUserFromToken(authHeader);
+
+        // A validly-signed token can still omit/mangle the userId claim. Guard here so a
+        // missing/invalid userId is treated as unauthorized (403) instead of throwing
+        // downstream in uuidToBinary and surfacing as a 500. See scripts/stress-500.ts.
+        if (!userDetails?.userId || typeof userDetails.userId !== 'string') {
+            ResponseHandler.forbidden(req, res, ERROR_MESSAGES.UNAUTHORIZED);
+            return;
+        }
+
         const userRole: string = await getUserRole(userDetails.userId);
 
         if (userRole === null) {

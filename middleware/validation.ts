@@ -199,6 +199,7 @@ const commonValidationMiddleware = [
   // Emergency contact fields
   body('emergencyContactName').optional({ nullable: true, checkFalsy: true }).isString().withMessage(VALIDATION_MESSAGES.EMERGENCY_CONTACT_NAME_REQUIRED),
   body('emergencyContactNumber').optional({ nullable: true, checkFalsy: true }).isString().withMessage(VALIDATION_MESSAGES.EMERGENCY_CONTACT_NUMBER_INVALID),
+  body('emergencyContactRelationship').optional({ nullable: true, checkFalsy: true }).isString().withMessage(VALIDATION_MESSAGES.EMERGENCY_CONTACT_RELATIONSHIP_INVALID),
 
   // G12 Information
   body('g12AcademicStrand')
@@ -206,6 +207,8 @@ const commonValidationMiddleware = [
     .customSanitizer(value => (typeof value === 'string' ? value.trim().toUpperCase() : value))
     .isIn(ACADEMIC_STRANDS).withMessage(VALIDATION_MESSAGES.G12_ACADEMIC_STRAND_INVALID),
   body('g12ProgramName').optional({ nullable: true, checkFalsy: true }).isString().withMessage(VALIDATION_MESSAGES.G12_PROGRAM_NAME_REQUIRED),
+  // G12 school is a free-text value typed by the student, not a dropdown/FK. No existence check.
+  body('g12SchoolName').optional({ nullable: true, checkFalsy: true }).isString().withMessage(VALIDATION_MESSAGES.G12_SCHOOL_NAME_INVALID),
   body('g12YearOfGraduation').optional({ nullable: true, checkFalsy: true }).isInt().withMessage(VALIDATION_MESSAGES.G12_YEAR_OF_GRADUATION_INVALID).toInt(),
   body('g12AwardHonor')
     .optional({ nullable: true, checkFalsy: true })
@@ -354,14 +357,6 @@ export const validateUpdateStudent = [
       const dontExist = await checkSchoolExist(value);
       if (dontExist) {
         return Promise.reject(VALIDATION_MESSAGES.COLLEGE_SCHOOL_ID_NOT_FOUND);
-      }
-    }),
-  body('g12SchoolId').optional({ nullable: true, checkFalsy: true }).isString().withMessage(VALIDATION_MESSAGES.G12_SCHOOL_ID_INVALID)
-    .custom(async ( value ) => {
-
-      const dontExist = await checkSchoolExist(value);
-      if (dontExist) {
-        return Promise.reject(VALIDATION_MESSAGES.G12_SCHOOL_ID_NOT_FOUND);
       }
     }),
   body('gwa').optional({ nullable: true, checkFalsy: true }).isFloat({ min: 1, max: 5 }).withMessage(VALIDATION_MESSAGES.GWA_INVALID)
@@ -710,6 +705,7 @@ export const validateSponsorship =  [
   body("limit").isInt({min: 1}).withMessage(VALIDATION_MESSAGES.SPONSORSHIP_LIMIT_REQUIRED),
   body("slot").isInt({min: 1}).withMessage(VALIDATION_MESSAGES.SPONSORSHIP_SLOT_REQUIRED),
   body("fundAllocation").isFloat({ min: 0.01 }).withMessage(VALIDATION_MESSAGES.SPONSORSHIP_FUND_ALLOCATION_INVALID),
+  body("allowancePerStudent").isFloat({ min: 0.01 }).withMessage(VALIDATION_MESSAGES.SPONSORSHIP_ALLOWANCE_PER_STUDENT_INVALID),
   body('name').isString().withMessage(VALIDATION_MESSAGES.SPONSORSHIP_NAME_REQUIRED)
     .custom( async (value, {req}) => {
       const batchNumber: number = req.body.batchNumber;
@@ -966,6 +962,15 @@ export const validateSchedulePayload = [
   body('scheduleType')
     .notEmpty().withMessage(VALIDATION_MESSAGES.SCHEDULE_TYPE_REQUIRED)
     .isIn(['TEST', 'INTERVIEW']).withMessage(VALIDATION_MESSAGES.SCHEDULE_TYPE_INVALID),
+  body('batchCode')
+    .notEmpty().withMessage(VALIDATION_MESSAGES.BATCH_CODE_REQUIRED)
+    .isString().withMessage(VALIDATION_MESSAGES.BATCH_CODE_REQUIRED),
+  body('examinationType')
+    .notEmpty().withMessage(VALIDATION_MESSAGES.EXAMINATION_TYPE_REQUIRED)
+    .isIn(['ONSITE', 'ONLINE']).withMessage(VALIDATION_MESSAGES.EXAMINATION_TYPE_INVALID),
+  body('proctorInterviewer')
+    .notEmpty().withMessage(VALIDATION_MESSAGES.PROCTOR_INTERVIEWER_REQUIRED)
+    .isString().withMessage(VALIDATION_MESSAGES.PROCTOR_INTERVIEWER_REQUIRED),
   body('location')
     .notEmpty().withMessage(VALIDATION_MESSAGES.LOCATION_REQUIRED),
   body('scheduleQuota')
@@ -986,6 +991,7 @@ export const validateSchedulePayload = [
       if (end <= start) {
         return Promise.reject(VALIDATION_MESSAGES.END_DATE_BEFORE_START_DATE);
       }
+      return true;
     }),
   validateErrors
 ]

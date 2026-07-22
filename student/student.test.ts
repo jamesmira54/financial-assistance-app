@@ -40,6 +40,67 @@ describe('GET /api/v1/students/award-honors', () => {
 const STRAND_ERROR = 'G12 academic strand must be one of';
 const AWARD_ERROR = 'award/honor must be one of';
 const MOBILE_ERROR = 'Mobile number must be 11 digits';
+const RELATIONSHIP_ERROR = 'Emergency contact relationship';
+const G12_SCHOOL_NAME_ERROR = 'G12 school name';
+
+describe('g12SchoolName validation on student create', () => {
+  const post = (body: Record<string, unknown>) =>
+    auth(request(app).post('/api/v1/students')).send({
+      email: 'newstudent@example.com',
+      firstName: 'Juan',
+      lastName: 'Dela Cruz',
+      mobileNumber: '09171234567',
+      ...body,
+    });
+
+  it('rejects a g12SchoolName that is not a string', async () => {
+    const res = await post({ g12SchoolName: 12345 });
+
+    expect(res.text).toContain(G12_SCHOOL_NAME_ERROR);
+  });
+
+  it('accepts a free-text school name that is not a registered school (no existence check)', async () => {
+    const res = await post({ g12SchoolName: 'Some Unlisted Provincial High School' });
+
+    expect(res.text).not.toContain(G12_SCHOOL_NAME_ERROR);
+    expect(res.text).not.toContain('not found in the system');
+  });
+
+  it('treats g12SchoolName as optional (no error when omitted)', async () => {
+    const res = await post({});
+
+    expect(res.text).not.toContain(G12_SCHOOL_NAME_ERROR);
+  });
+});
+
+describe('emergencyContactRelationship validation on student create', () => {
+  const post = (body: Record<string, unknown>) =>
+    auth(request(app).post('/api/v1/students')).send({
+      email: 'newstudent@example.com',
+      firstName: 'Juan',
+      lastName: 'Dela Cruz',
+      mobileNumber: '09171234567',
+      ...body,
+    });
+
+  it('rejects a relationship that is not a string', async () => {
+    const res = await post({ emergencyContactRelationship: 12345 });
+
+    expect(res.text).toContain(RELATIONSHIP_ERROR);
+  });
+
+  it('accepts a valid string relationship (no relationship error)', async () => {
+    const res = await post({ emergencyContactRelationship: 'Mother' });
+
+    expect(res.text).not.toContain(RELATIONSHIP_ERROR);
+  });
+
+  it('treats emergencyContactRelationship as optional (no error when omitted)', async () => {
+    const res = await post({});
+
+    expect(res.text).not.toContain(RELATIONSHIP_ERROR);
+  });
+});
 
 describe('mobileNumber validation on student create', () => {
   const post = (mobileNumber: unknown) =>

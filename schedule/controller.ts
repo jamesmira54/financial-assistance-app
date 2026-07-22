@@ -24,7 +24,7 @@ export default () => {
 
     scheduleAPI.put('/:scheduleId', allowRoles('system admin', 'financial assistance coordinator' ), validateScheduleId , validateSchedulePayload,  async (req, res) => {
         try {
-            const { scheduleId } = req.params.scheduleId;
+            const { scheduleId } = req.params;
             const authHeader: string = req.headers.authorization;
             const payload: ScheduleRequest = req.body;
             const data = await edit( payload, scheduleId, authHeader );
@@ -47,7 +47,7 @@ export default () => {
 
     scheduleAPI.get('/:scheduleId', validateScheduleId , async (req, res) => {
         try {
-            const { scheduleId } = req.params.scheduleId;
+            const { scheduleId } = req.params;
             const data = await fetch( scheduleId );
             ResponseHandler.ok(req, res, data);
         } catch (err) {
@@ -57,7 +57,7 @@ export default () => {
 
     scheduleAPI.delete('/:scheduleId', allowRoles('system admin', 'financial assistance coordinator' ), validateScheduleId , async (req, res) => {
         try {
-            const { scheduleId } = req.params.scheduleId;
+            const { scheduleId } = req.params;
             await remove( scheduleId );
             ResponseHandler.deleted(req, res, VALIDATION_MESSAGES.SCHEDULE_DELETED);
         } catch (err) {

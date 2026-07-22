@@ -1,0 +1,26 @@
+{
+  "total": 515,
+  "byStatus": {
+    "200": 66,
+    "400": 416,
+    "404": 9,
+    "413": 22,
+    "500": 2
+  },
+  "errors": [
+    {
+      "method": "get",
+      "url": "/api/v1/sponsorships/coordinator",
+      "label": "auth[allowRoles]:no-userId",
+      "status": 500,
+      "snippet": "{\"errorMessage\":\"INTERNAL-SERVER-ERROR\",\"description\":\"Internal Server Error\",\"generatedAt\":1783729816235,\"errorDetails\":\"An unexpected error occurred\"}"
+    },
+    {
+      "method": "get",
+      "url": "/api/v1/monitoring/grantees",
+      "label": "auth[monitoring]:no-userId",
+      "status": 500,
+      "snippet": "{\"errorMessage\":\"INTERNAL-SERVER-ERROR\",\"description\":\"Internal Server Error\",\"generatedAt\":1783729816269,\"errorDetails\":\"An unexpected error occurred\"}"
+    }
+  ]
+}

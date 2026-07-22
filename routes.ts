@@ -19,6 +19,7 @@ import notificationController from "./notification/controller";
 import faqController from "./faq/controller";
 import staticContentController from "./staticContent/controller";
 import publicController from "./public/controller";
+import monitoringController from "./monitoring/controller";
 
 const routes = Router();
 
@@ -41,6 +42,7 @@ routes.use("/notifications", authentication, notificationController());
 routes.use("/faqs", faqController()); // Public listing, auth required for CRUD
 routes.use("/static-content", staticContentController()); // Public listing, auth required for CRUD
 routes.use("/public", publicController()); // No authentication required
+routes.use("/monitoring", authentication, monitoringController());
 
 routes.get("/verify", authentication, (req, res) => {
     res.json({ valid: true, message: "you have access to this api" });

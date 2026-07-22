@@ -130,17 +130,20 @@ model student {
   is_sped                 Boolean?
   is_pwd                  Boolean?
 
-  emergency_contact_name    String? @db.VarChar(255)
-  emergency_contact_number  String? @db.VarChar(15)
-  emergency_contact_name2   String? @db.VarChar(255)
-  emergency_contact_number2 String? @db.VarChar(15)
+  emergency_contact_name         String? @db.VarChar(255)
+  emergency_contact_number       String? @db.VarChar(15)
+  emergency_contact_relationship String? @db.VarChar(255)
+  // Deprecated: second emergency contact is no longer written or exposed by the API.
+  // Columns retained (non-destructive) pending confirmation no data depends on them; drop in a later migration.
+  emergency_contact_name2        String? @db.VarChar(255)
+  emergency_contact_number2      String? @db.VarChar(15)
 
   g12_academic_strand    String? @db.VarChar(255)
   g12_program_name       String? @db.VarChar(255)
   g12_award_honor        String? @db.VarChar(255)
   g12_organization       String? @db.VarChar(255)
   g12_year_of_graduation Int?    @db.Int
-  g12_school_id          Bytes?  @db.Binary(16)
+  g12_school_name        String? @db.VarChar(255)
 
   college_program_name String? @db.VarChar(255)
   college_year_level   Int?
@@ -196,7 +199,6 @@ model student {
   current_province province? @relation("CurrentStudentAddress", fields: [current_province_id], references: [id])
   current_region   region?   @relation("CurrentStudentAddress", fields: [current_region_id], references: [id])
 
-  g12_school     school? @relation("G12School", fields: [g12_school_id], references: [id])
   college_school school? @relation("CollegeSchool", fields: [college_school_id], references: [id])
   files          file[]
   customInput    customInputCriterion[]
@@ -319,7 +321,6 @@ model school {
   citymun  citymun  @relation(fields: [citymun_id], references: [id])
   brgy     barangay @relation(fields: [brgy_id], references: [id])
 
-  G12School         student[]           @relation("G12School")
   CollegeSchool     student[]           @relation("CollegeSchool")
   sponsorshipSchool sponsorshipSchool[]
 
@@ -370,6 +371,9 @@ model sponsorship {
   limit            Int
   slot             Int
   fund_allocation  Decimal
+  // Nullable so the additive migration does not require a default/backfill on existing rows;
+  // required at the API layer for new sponsorships. Legacy rows read back null.
+  allowance_per_student Decimal?
   status           String
   record_status    Boolean  @default(true)
   created_at       DateTime @default(now())
@@ -459,7 +463,10 @@ model schedule {
   id                 Bytes              @id @default(dbgenerated("(UUID_TO_BIN(UUID()))")) @db.Binary(16)
   sponsorship_id     Bytes              @db.Binary(16)
   batch_no           Int
-  schedule_type      schedule_type  
+  batch_code         String?            @db.VarChar(255)
+  schedule_type      schedule_type
+  examination_type   examination_type?
+  proctor_interviewer String?           @db.VarChar(255)
   location           String             @db.VarChar(255)
   start_date         DateTime
   end_date           DateTime
@@ -577,7 +584,12 @@ model customInputCriterion {
 enum schedule_type {
   TEST
   INTERVIEW
-}   
+}
+
+enum examination_type {
+  ONSITE
+  ONLINE
+}
 
 enum siblings_sibling_status {
   Single
@@ -608,8 +620,13 @@ enum application_status {
   RANKED
   NOT_QUALIFIED
 
-  // Final Selection Stage Statuses
+  // Final Selection Stage Statuses. AWARDED doubles as the "Active" grantee
+  // state in the post-award Monitoring List (Awarded == Active).
   AWARDED
+
+  // Post-award Monitoring (grantee lifecycle) Statuses
+  DELISTED
+  GRADUATED
 }
 
 enum EvaluationStatus {
