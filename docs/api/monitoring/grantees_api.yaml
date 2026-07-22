@@ -137,6 +137,11 @@ components:
         batch:
           type: integer
           nullable: true
+        academicYear:
+          type: string
+          nullable: true
+          description: "Formatted 'YYYY-YYYY' from academicYear.academic_year_start/_end."
+          example: "2024-2025"
         semester:
           type: integer
           nullable: true

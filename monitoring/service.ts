@@ -46,11 +46,21 @@ const completeName = (s: any): string => {
   return `${s.last_name}, ${given}${ext}`.trim();
 };
 
+// Academic year is stored as start/end ints on the related academicYear and
+// presented as a "2024-2025" label. Null when either bound is missing.
+const academicYearLabel = (ay: any): string | null => {
+  if (!ay || ay.academic_year_start == null || ay.academic_year_end == null) {
+    return null;
+  }
+  return `${ay.academic_year_start}-${ay.academic_year_end}`;
+};
+
 const toGranteeRow = (row: any, seq: number) => ({
   seq,
   awardNumber: row.award_number ?? null,
   grantName: row.sponsorship?.name ?? null,
   batch: row.sponsorship?.batch_number ?? null,
+  academicYear: academicYearLabel(row.sponsorship?.academicYear),
   semester: row.sponsorship?.academicYear?.school_term ?? null,
   studentId: row.student?.id ? binaryToUuid(row.student.id) : null,
   completeName: completeName(row.student),

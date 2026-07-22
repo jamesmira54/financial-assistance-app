@@ -41,7 +41,7 @@ const granteeRecord = () => ({
   sponsorship: {
     name: 'TDP Scholarship',
     batch_number: 1,
-    academicYear: { school_term: 1 },
+    academicYear: { school_term: 1, academic_year_start: 2024, academic_year_end: 2025 },
   },
 });
 
@@ -70,6 +70,7 @@ describe('GET /api/v1/monitoring/grantees', () => {
       awardNumber: 'AWD-001-0001',
       grantName: 'TDP Scholarship',
       batch: 1,
+      academicYear: '2024-2025',
       semester: 1,
       completeName: 'Dela Cruz, Juan Santos',
       gender: 'Male',
