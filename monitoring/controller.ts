@@ -32,7 +32,7 @@ export default () => {
     async (req, res) => {
       try {
         const authHeader = req.headers.authorization;
-        const { applicationId } = req.params;
+        const applicationId = String(req.params.applicationId);
         const data = await changeGranteeStatus(applicationId, req.body, authHeader);
         ResponseHandler.updated(req, res, data);
       } catch (err) {
