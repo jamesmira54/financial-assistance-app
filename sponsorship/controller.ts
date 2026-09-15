@@ -32,6 +32,9 @@ export default () => {
             const data: SponsorshipResponse = await updateSponsorship( payload, authHeader, sponsorshipId );
             ResponseHandler.updated(req, res, data);
         } catch (err) {
+            // The response only carries err.message; log the whole error so a failure here is
+            // diagnosable from the server console instead of only as a bare 400 in the client.
+            console.error("Failed to update sponsorship", req.params.sponsorshipId, err);
             ResponseHandler.invalidRequest(req,res , err.message);
         }
     }); 

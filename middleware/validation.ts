@@ -700,12 +700,15 @@ export const validateApplyScholarship = [
 ]
 
 export const validateSponsorship =  [
-  body("batchNumber").isInt().withMessage(VALIDATION_MESSAGES.SPONSORSHIP_BATCH_NUMBER_REQUIRED),
+  // isInt/isFloat accept numeric strings, so a form that posts "1" instead of 1 passes
+  // validation and then reaches Prisma, which rejects a String for an Int column and
+  // surfaces as an opaque 400. Coerce here so the numeric contract holds end to end.
+  body("batchNumber").isInt().withMessage(VALIDATION_MESSAGES.SPONSORSHIP_BATCH_NUMBER_REQUIRED).toInt(),
   body("durationFrom").isISO8601().withMessage(VALIDATION_MESSAGES.SPONSORSHIP_DURATION_FROM_REQUIRED),
-  body("limit").isInt({min: 1}).withMessage(VALIDATION_MESSAGES.SPONSORSHIP_LIMIT_REQUIRED),
-  body("slot").isInt({min: 1}).withMessage(VALIDATION_MESSAGES.SPONSORSHIP_SLOT_REQUIRED),
-  body("fundAllocation").isFloat({ min: 0.01 }).withMessage(VALIDATION_MESSAGES.SPONSORSHIP_FUND_ALLOCATION_INVALID),
-  body("allowancePerStudent").isFloat({ min: 0.01 }).withMessage(VALIDATION_MESSAGES.SPONSORSHIP_ALLOWANCE_PER_STUDENT_INVALID),
+  body("limit").isInt({min: 1}).withMessage(VALIDATION_MESSAGES.SPONSORSHIP_LIMIT_REQUIRED).toInt(),
+  body("slot").isInt({min: 1}).withMessage(VALIDATION_MESSAGES.SPONSORSHIP_SLOT_REQUIRED).toInt(),
+  body("fundAllocation").isFloat({ min: 0.01 }).withMessage(VALIDATION_MESSAGES.SPONSORSHIP_FUND_ALLOCATION_INVALID).toFloat(),
+  body("allowancePerStudent").isFloat({ min: 0.01 }).withMessage(VALIDATION_MESSAGES.SPONSORSHIP_ALLOWANCE_PER_STUDENT_INVALID).toFloat(),
   body('name').isString().withMessage(VALIDATION_MESSAGES.SPONSORSHIP_NAME_REQUIRED)
     .custom( async (value, {req}) => {
       const batchNumber: number = req.body.batchNumber;

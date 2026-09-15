@@ -72,6 +72,13 @@ async function readLedger(): Promise<LedgerRow[]> {
 }
 
 function readLocalMigrations(): string[] {
+  if (!fs.existsSync(MIGRATIONS_DIR)) {
+    throw new Error(
+      `No migrations found at ${MIGRATIONS_DIR}.\n` +
+        `  prisma/migrations/ is the source of truth for this script and is committed to git.\n` +
+        `  Pull the latest main and re-run.`,
+    );
+  }
   return fs
     .readdirSync(MIGRATIONS_DIR, { withFileTypes: true })
     .filter((d) => d.isDirectory())
