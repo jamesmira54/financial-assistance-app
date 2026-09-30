@@ -1,0 +1,840 @@
+openapi: 3.0.3
+info:
+  title: "Document Tracking System (DTS) API"
+  version: "1.0.0"
+  description: >
+    Tracks scholarship/assistance documents as they move between offices.
+    A track is created (as a draft or submitted directly), received by the destination
+    office, then forwarded, returned or completed. Every state change appends an
+    immutable history entry.
+
+
+    **Workflow**
+
+    `DRAFT -SUBMIT-> SUBMITTED -ACCEPT-> IN_PROCESSED -FORWARD-> FORWARDED -ACCEPT-> IN_PROCESSED ... -DONE-> DONE`
+
+
+    `SUBMITTED` and `IN_PROCESSED` can also be `RETURN`ed. A return goes back to the office
+    that last submitted/forwarded the track (derived from history, never chosen by the
+    client). If that is an intermediate office it `ACCEPT`s and continues; if it is the
+    origin, the creator `EDIT`s and re-`SUBMIT`s. `DONE` is terminal.
+
+
+    **Authorization**
+
+    - Create: `system admin` or `financial assistance coordinator`.
+
+    - EDIT / SUBMIT: the track's creator (plus users of the origin office once returned there).
+
+    - ACCEPT / FORWARD / RETURN / DONE: only users whose DTS office currently holds the track.
+      There is no admin bypass.
+
+    - Visibility: drafts are private to their creator. Admins/coordinators see all non-draft
+      tracks. Office users see tracks their office holds or has sent/received.
+
+    Status, current office, actor and timestamps are always set by the server, and any such
+    fields in a request body are ignored. Each track response includes `allowedActions` for
+    the calling user.
+
+
+    **Errors.** Validation and business-rule failures return `400` with an
+    `InvalidRequestResponse`. Authorization failures also return HTTP `400` (this codebase's
+    `ResponseHandler.forbidden`), with a `ForbiddenResponse` body (`errorMessage: FORBIDDEN`).
+    A lost concurrent-update race returns `400` with
+    "This track was updated by someone else. Reload it and try again".
+
+servers:
+  - url: "http://localhost:8000/api/v1"
+    description: "Local dev (Postman imports this as baseUrl)"
+  - url: "/api/v1"
+    description: "Relative to the current host"
+
+tags:
+  - name: "Testing helpers"
+    description: "Copies of existing endpoints (auth, roles) so DTS can be tested from this page alone"
+  - name: "Document Tracking"
+    description: "Create, view, and move document tracks"
+  - name: "Document Tracking Setup"
+    description: "Setup Manager: process types, purposes, destination offices, office user assignment"
+
+security:
+  - bearerAuth: []
+
+paths:
+  /auth/login:
+    post:
+      tags: ["Testing helpers"]
+      operationId: login
+      summary: "Log in and get a JWT (copy data.token into Authorize)"
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, password]
+              properties:
+                username: { type: string, example: "admin123" }
+                password: { type: string, example: "12345678" }
+      responses:
+        "200":
+          description: "Token in data.token"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /roles:
+    get:
+      tags: ["Testing helpers"]
+      operationId: listRoles
+      summary: "List roles (system admin) — find the DTS Officer role id"
+      responses:
+        "200":
+          description: "Roles"
+
+  /auth/register:
+    post:
+      tags: ["Testing helpers"]
+      operationId: registerUser
+      summary: "Create a user (authenticated) — e.g. a DTS Officer for an office"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, email, password, repassword, roleId, firstName, lastName, mobileNumber]
+              properties:
+                username: { type: string, example: "accounting1" }
+                email: { type: string, example: "accounting1@example.com" }
+                password: { type: string, example: "password123" }
+                repassword: { type: string, example: "password123" }
+                roleId: { type: string, format: uuid, description: "DTS Officer role id from GET /roles" }
+                firstName: { type: string, example: "Ana" }
+                lastName: { type: string, example: "Accounting" }
+                middleName: { type: string, example: "" }
+                mobileNumber: { type: string, example: "09171234567" }
+      responses:
+        "201":
+          description: "Created user"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /document-tracks/me:
+    get:
+      tags: ["Document Tracking"]
+      operationId: getDtsCurrentUser
+      summary: "Current DTS user (office and create permission)"
+      responses:
+        "200":
+          description: "Current user"
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/TrackCurrentUser"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /document-tracks:
+    get:
+      tags: ["Document Tracking"]
+      operationId: listDocumentTracks
+      summary: "List tracks visible to the caller"
+      parameters:
+        - $ref: "#/components/parameters/Offset"
+        - $ref: "#/components/parameters/Limit"
+        - name: sort
+          in: query
+          description: "Sort by created date."
+          schema: { type: string, enum: [asc, desc], default: desc }
+        - name: search
+          in: query
+          description: "Matches track number or title (contains)."
+          schema: { type: string }
+        - name: status
+          in: query
+          schema: { $ref: "#/components/schemas/TrackStatus" }
+        - name: processTypeId
+          in: query
+          schema: { type: string, format: uuid }
+        - name: purposeId
+          in: query
+          schema: { type: string, format: uuid }
+        - name: sponsorshipId
+          in: query
+          schema: { type: string, format: uuid }
+        - name: currentOfficeId
+          in: query
+          schema: { type: string, format: uuid }
+        - name: createdFrom
+          in: query
+          schema: { type: string, format: date-time }
+        - name: createdTo
+          in: query
+          schema: { type: string, format: date-time }
+        - name: submittedFrom
+          in: query
+          schema: { type: string, format: date-time }
+        - name: submittedTo
+          in: query
+          schema: { type: string, format: date-time }
+        - name: inbox
+          in: query
+          description: "true = only tracks currently waiting on the caller's office."
+          schema: { type: boolean }
+      responses:
+        "200":
+          description: "Paginated tracks (without history; fetch a single track for history)"
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          data:
+                            type: array
+                            items: { $ref: "#/components/schemas/DocumentTrack" }
+                          total: { type: integer, example: 1 }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+    post:
+      tags: ["Document Tracking"]
+      operationId: createDocumentTrack
+      summary: "Create a track (Create as Draft / Create and Submit)"
+      description: >
+        `submit: false` (default) creates a DRAFT; `destinationId` is optional and stored as
+        the intended destination. `submit: true` creates and submits in one step:
+        `destinationId` is required and the destination office is notified. The track number
+        (`DTS-YYYY-NNNNNN`) is generated server-side at creation and never changes.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/DocumentTrackPayload" }
+      responses:
+        "201":
+          description: "Created"
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TrackCreatedResponse" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /document-tracks/{trackId}:
+    parameters:
+      - $ref: "#/components/parameters/TrackId"
+    get:
+      tags: ["Document Tracking"]
+      operationId: getDocumentTrack
+      summary: "Track details with full history"
+      responses:
+        "200":
+          description: "Track"
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TrackOkResponse" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+    put:
+      tags: ["Document Tracking"]
+      operationId: updateDocumentTrack
+      summary: "Edit a draft (or a track returned to its origin)"
+      description: >
+        Updates document fields only. Requires the EDIT action (creator, while DRAFT or
+        RETURNED to the origin). `submit` is ignored; use `POST /{trackId}/submit`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/DocumentTrackPayload" }
+      responses:
+        "200":
+          description: "Updated"
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TrackUpdatedResponse" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+    delete:
+      tags: ["Document Tracking"]
+      operationId: deleteDraftTrack
+      summary: "Discard a draft (creator only; soft delete)"
+      responses:
+        "200":
+          description: "Deleted"
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessEnvelope"
+                  - type: object
+                    properties:
+                      message: { example: "Resource Successlly Deleted!" }
+                      data: { type: string, example: "Draft track successfully deleted" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /document-tracks/{trackId}/history:
+    parameters:
+      - $ref: "#/components/parameters/TrackId"
+    get:
+      tags: ["Document Tracking"]
+      operationId: getDocumentTrackHistory
+      summary: "Persisted history, in order"
+      responses:
+        "200":
+          description: "History entries"
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items: { $ref: "#/components/schemas/TrackHistoryEntry" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /document-tracks/{trackId}/pdf:
+    parameters:
+      - $ref: "#/components/parameters/TrackId"
+    get:
+      tags: ["Document Tracking"]
+      operationId: getDocumentTrackPdf
+      summary: "Print track as PDF (submitted tracks only)"
+      description: "Generated from the persisted track and history. Same visibility rules as GET /{trackId}."
+      responses:
+        "200":
+          description: "PDF document (`Content-Disposition: inline; filename=\"DTS-2026-000001.pdf\"`)"
+          content:
+            application/pdf:
+              schema: { type: string, format: binary }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /document-tracks/{trackId}/submit:
+    parameters:
+      - $ref: "#/components/parameters/TrackId"
+    post:
+      tags: ["Document Tracking"]
+      operationId: submitDocumentTrack
+      summary: "SUBMIT: send a draft (or a track returned to its origin) to an office"
+      description: >
+        Allowed from DRAFT (creator) or RETURNED-at-origin. `destinationId` defaults to the
+        draft's intended destination and must be an active office other than the sender.
+        `submittedAt` keeps the first submission date on resubmission.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                destinationId: { type: string, format: uuid, nullable: true }
+                remarks: { type: string, nullable: true }
+      responses:
+        "200": { $ref: "#/components/responses/TrackUpdated" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+
+  /document-tracks/{trackId}/accept:
+    parameters:
+      - $ref: "#/components/parameters/TrackId"
+    post:
+      tags: ["Document Tracking"]
+      operationId: acceptDocumentTrack
+      summary: "ACCEPT (In-Processed): the holding office acknowledges receipt"
+      description: "Allowed from SUBMITTED, FORWARDED, or RETURNED to an intermediate office. Sets status IN_PROCESSED."
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                remarks: { type: string, nullable: true }
+      responses:
+        "200": { $ref: "#/components/responses/TrackUpdated" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+
+  /document-tracks/{trackId}/forward:
+    parameters:
+      - $ref: "#/components/parameters/TrackId"
+    post:
+      tags: ["Document Tracking"]
+      operationId: forwardDocumentTrack
+      summary: "FORWARD to another office"
+      description: "Allowed from IN_PROCESSED. The destination must be an active office other than the current one. Sets status FORWARDED."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [destinationId, remarks]
+              properties:
+                destinationId: { type: string, format: uuid }
+                remarks: { type: string, example: "For release of funds" }
+      responses:
+        "200": { $ref: "#/components/responses/TrackUpdated" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+
+  /document-tracks/{trackId}/return:
+    parameters:
+      - $ref: "#/components/parameters/TrackId"
+    post:
+      tags: ["Document Tracking"]
+      operationId: returnDocumentTrack
+      summary: "RETURN to the sending office"
+      description: >
+        Allowed from SUBMITTED or IN_PROCESSED. Goes back to the office that last
+        submitted/forwarded the track to the current office (or to the creator if they have
+        no office). Sets status RETURNED.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [remarks]
+              properties:
+                remarks: { type: string, description: "Return reason", example: "Missing signatures on 3 vouchers" }
+      responses:
+        "200": { $ref: "#/components/responses/TrackUpdated" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+
+  /document-tracks/{trackId}/done:
+    parameters:
+      - $ref: "#/components/parameters/TrackId"
+    post:
+      tags: ["Document Tracking"]
+      operationId: completeDocumentTrack
+      summary: "DONE: complete the workflow"
+      description: "Allowed from IN_PROCESSED. Terminal: a DONE track can no longer be forwarded, returned, accepted or edited."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [remarks]
+              properties:
+                remarks:
+                  type: string
+                  description: "Final remarks / release details"
+                  example: "Scholarship voucher processed and released to Treasury Office."
+      responses:
+        "200": { $ref: "#/components/responses/TrackUpdated" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+
+  # ---------------------------------------------------------------- setup manager
+
+  /document-tracks/setup/{kind}:
+    parameters:
+      - $ref: "#/components/parameters/SetupKind"
+    get:
+      tags: ["Document Tracking Setup"]
+      operationId: listDtsSetup
+      summary: "List setup values (any authenticated user; used for dropdowns)"
+      parameters:
+        - name: active
+          in: query
+          description: "true = only selectable (is_active) values"
+          schema: { type: boolean }
+        - name: search
+          in: query
+          schema: { type: string }
+        - $ref: "#/components/parameters/Offset"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: "Setup values"
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          data:
+                            type: array
+                            items: { $ref: "#/components/schemas/SetupItem" }
+                          total: { type: integer, example: 8 }
+        "400": { $ref: "#/components/responses/BadRequest" }
+    post:
+      tags: ["Document Tracking Setup"]
+      operationId: createDtsSetup
+      summary: "Create a setup value (system admin, coordinator)"
+      description: "Names are unique per kind. Re-adding a previously deleted name restores that record."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/SetupPayload"
+                - required: [name]
+      responses:
+        "201":
+          description: "Created"
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessEnvelope"
+                  - type: object
+                    properties:
+                      statusCode: { example: 201 }
+                      message: { example: "Resource Successfully Created!" }
+                      data: { $ref: "#/components/schemas/SetupItem" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+
+  /document-tracks/setup/{kind}/{id}:
+    parameters:
+      - $ref: "#/components/parameters/SetupKind"
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    put:
+      tags: ["Document Tracking Setup"]
+      operationId: updateDtsSetup
+      summary: "Update a setup value (system admin, coordinator)"
+      description: "Set `isActive: false` to hide a value from dropdowns while keeping it on existing tracks."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SetupPayload" }
+      responses:
+        "200":
+          description: "Updated"
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessEnvelope"
+                  - type: object
+                    properties:
+                      message: { example: "Resource Successlly Updated!" }
+                      data: { $ref: "#/components/schemas/SetupItem" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+    delete:
+      tags: ["Document Tracking Setup"]
+      operationId: deleteDtsSetup
+      summary: "Soft-delete a setup value (system admin, coordinator)"
+      description: "Refused for an office still holding open (non-draft, non-done) tracks."
+      responses:
+        "200":
+          description: "Deleted"
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessEnvelope"
+                  - type: object
+                    properties:
+                      message: { example: "Resource Successlly Deleted!" }
+                      data: { type: string, example: "Setup record successfully deleted" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+
+  /document-tracks/setup/offices/{id}/users:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      tags: ["Document Tracking Setup"]
+      operationId: listDtsOfficeUsers
+      summary: "Users assigned to an office (system admin, coordinator)"
+      responses:
+        "200":
+          description: "Office users"
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items: { $ref: "#/components/schemas/OfficeUser" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+
+  /document-tracks/setup/user-offices/{userId}:
+    parameters:
+      - name: userId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    put:
+      tags: ["Document Tracking Setup"]
+      operationId: assignDtsUserOffice
+      summary: "Assign or unassign a user's DTS office (system admin only)"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [officeId]
+              properties:
+                officeId:
+                  type: string
+                  format: uuid
+                  nullable: true
+                  description: "Active office id, or null to unassign"
+      responses:
+        "200":
+          description: "Updated"
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessEnvelope"
+                  - type: object
+                    properties:
+                      message: { example: "Resource Successlly Updated!" }
+                      data: { $ref: "#/components/schemas/OfficeUser" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    TrackId:
+      name: trackId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    SetupKind:
+      name: kind
+      in: path
+      required: true
+      schema:
+        type: string
+        enum: [process-types, purposes, offices]
+    Offset:
+      name: offset
+      in: query
+      schema: { type: integer, minimum: 0, default: 0 }
+    Limit:
+      name: limit
+      in: query
+      schema: { type: integer, minimum: 1, default: 50 }
+
+  responses:
+    TrackUpdated:
+      description: "Updated track, including the new history entry and the caller's allowedActions"
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/TrackUpdatedResponse" }
+    BadRequest:
+      description: >
+        Validation/business-rule error (InvalidRequestResponse) or authorization failure
+        (ForbiddenResponse). Both use HTTP 400 in this codebase.
+      content:
+        application/json:
+          schema:
+            oneOf:
+              - $ref: "#/components/schemas/InvalidRequestResponse"
+              - $ref: "#/components/schemas/ForbiddenResponse"
+
+  schemas:
+    TrackStatus:
+      type: string
+      enum: [DRAFT, SUBMITTED, IN_PROCESSED, FORWARDED, RETURNED, DONE]
+    TrackHistoryAction:
+      type: string
+      enum: [CREATED, SUBMITTED, ACCEPTED, FORWARDED, RETURNED, DONE]
+    TrackAction:
+      type: string
+      enum: [EDIT, SUBMIT, ACCEPT, FORWARD, RETURN, DONE]
+
+    DocumentTrackPayload:
+      type: object
+      required: [title, particulars, processTypeId, purposeId, sponsorshipId]
+      properties:
+        title: { type: string, maxLength: 255, example: "Batch 1 Scholarship Voucher Processing" }
+        particulars: { type: string, example: "Scholarship vouchers and supporting documents for Batch 1 grantees" }
+        processTypeId: { type: string, format: uuid, description: "Active process type" }
+        purposeId: { type: string, format: uuid, description: "Active process purpose" }
+        sponsorshipId: { type: string, format: uuid, description: "Active sponsorship" }
+        destinationId:
+          type: string
+          format: uuid
+          nullable: true
+          description: "Active destination office. Required when submit is true."
+        submit:
+          type: boolean
+          default: false
+          description: "true = Create and Submit; false = Create as Draft. POST only."
+
+    TrackActor:
+      type: object
+      properties:
+        userId: { type: string, format: uuid }
+        name: { type: string, example: "Maria Santos" }
+        office: { type: string, example: "Accounting Office", description: "Empty string if the actor has no office" }
+        officeId: { type: string, format: uuid, nullable: true }
+
+    TrackHistoryEntry:
+      type: object
+      properties:
+        sequence: { type: integer, example: 3, description: "1-based position within the track" }
+        action: { $ref: "#/components/schemas/TrackHistoryAction" }
+        status: { $ref: "#/components/schemas/TrackStatus" }
+        fromOffice: { type: string, example: "Scholarship Office" }
+        fromOfficeId: { type: string, format: uuid, nullable: true }
+        toOffice: { type: string, nullable: true, example: "Accounting Office" }
+        toOfficeId: { type: string, format: uuid, nullable: true }
+        remarks: { type: string, nullable: true }
+        actor: { $ref: "#/components/schemas/TrackActor" }
+        at: { type: string, format: date-time }
+
+    DocumentTrack:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        trackNumber: { type: string, example: "DTS-2026-000001" }
+        title: { type: string }
+        particulars: { type: string }
+        processTypeId: { type: string, format: uuid }
+        processType: { type: string, example: "For Processing" }
+        purposeId: { type: string, format: uuid }
+        purpose: { type: string, example: "Scholarship/Assistance Voucher" }
+        sponsorshipId: { type: string, format: uuid }
+        sponsorshipName: { type: string }
+        status: { $ref: "#/components/schemas/TrackStatus" }
+        currentOfficeId: { type: string, format: uuid, nullable: true }
+        currentHolder:
+          type: string
+          example: "Accounting Office"
+          description: "Holding office name, or the creator's name when no office holds it (draft / returned to an office-less creator)"
+        originOfficeId: { type: string, format: uuid, nullable: true }
+        originOffice: { type: string, nullable: true, example: "Scholarship Office" }
+        intendedDestinationId: { type: string, format: uuid, nullable: true }
+        intendedDestination: { type: string, nullable: true }
+        createdBy:
+          type: object
+          properties:
+            userId: { type: string, format: uuid }
+            name: { type: string }
+        createdAt: { type: string, format: date-time }
+        submittedAt: { type: string, format: date-time, nullable: true }
+        completedAt: { type: string, format: date-time, nullable: true }
+        allowedActions:
+          type: array
+          description: "Actions the calling user may perform right now"
+          items: { $ref: "#/components/schemas/TrackAction" }
+        history:
+          type: array
+          description: "Present on single-track responses; omitted in lists"
+          items: { $ref: "#/components/schemas/TrackHistoryEntry" }
+
+    TrackCurrentUser:
+      type: object
+      properties:
+        userId: { type: string, format: uuid }
+        name: { type: string }
+        userType: { type: string, example: "dts officer", description: "Role name (lowercase)" }
+        officeId: { type: string, format: uuid, nullable: true }
+        officeName: { type: string, nullable: true }
+        canCreate: { type: boolean }
+
+    SetupItem:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string, example: "Accounting Office" }
+        sortOrder: { type: integer, example: 5 }
+        isActive: { type: boolean }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    SetupPayload:
+      type: object
+      properties:
+        name: { type: string, maxLength: 150 }
+        sortOrder: { type: integer, minimum: 0 }
+        isActive: { type: boolean }
+
+    OfficeUser:
+      type: object
+      properties:
+        userId: { type: string, format: uuid }
+        name: { type: string }
+        email: { type: string }
+        role: { type: string, nullable: true, example: "DTS Officer" }
+        officeId: { type: string, format: uuid, nullable: true }
+        officeName: { type: string, nullable: true }
+
+    SuccessEnvelope:
+      type: object
+      properties:
+        statusCode: { type: integer, example: 200 }
+        message: { type: string, example: "Request Successfully Accepted!" }
+        data: {}
+        generatedAt: { type: integer, example: 1790768857151 }
+
+    TrackOkResponse:
+      allOf:
+        - $ref: "#/components/schemas/SuccessEnvelope"
+        - type: object
+          properties:
+            data: { $ref: "#/components/schemas/DocumentTrack" }
+    TrackCreatedResponse:
+      allOf:
+        - $ref: "#/components/schemas/SuccessEnvelope"
+        - type: object
+          properties:
+            statusCode: { example: 201 }
+            message: { example: "Resource Successfully Created!" }
+            data: { $ref: "#/components/schemas/DocumentTrack" }
+    TrackUpdatedResponse:
+      allOf:
+        - $ref: "#/components/schemas/SuccessEnvelope"
+        - type: object
+          properties:
+            message: { example: "Resource Successlly Updated!" }
+            data: { $ref: "#/components/schemas/DocumentTrack" }
+
+    InvalidRequestResponse:
+      type: object
+      properties:
+        errorMessage: { type: string, example: "INVALID-REQUEST" }
+        description: { type: string, example: "Request is not well-formed, syntactically incorrect, or violates schema." }
+        errorDetails:
+          description: "A message string, or express-validator's { errors: [...] } object"
+          oneOf:
+            - type: string
+              example: "This action is not allowed for the track's current status"
+            - type: object
+        generatedAt: { type: integer }
+    ForbiddenResponse:
+      type: object
+      properties:
+        errorMessage: { type: string, example: "FORBIDDEN" }
+        description: { type: string, example: "The resource requested is forbidden for your API Key." }
+        errorDetails:
+          type: string
+          example: "Only users of the office currently holding this track can perform this action"
+        generatedAt: { type: integer }

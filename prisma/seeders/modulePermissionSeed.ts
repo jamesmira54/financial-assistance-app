@@ -10,6 +10,7 @@ const PARENT_MODULES = [
   { name: 'Financing',         sorter: 4 },
   { name: 'Setup Manager',     sorter: 5 },
   { name: 'Settings',          sorter: 6 },
+  { name: 'Document Tracking', sorter: 7 },
 ];
 
 // Child modules keyed by their parent name
@@ -33,6 +34,10 @@ const CHILD_MODULES: Record<string, { name: string; sorter: number }[]> = {
     { name: 'Schools',         sorter: 3 },
     { name: 'Schedules',       sorter: 4 },
     { name: 'Ranking Order',   sorter: 5 },
+    // DTS "Office Track" configuration
+    { name: 'Process Type',        sorter: 6 },
+    { name: 'Process Purpose',     sorter: 7 },
+    { name: 'Process Destination', sorter: 8 },
   ],
   'Settings': [
     { name: 'Profile',          sorter: 1 },

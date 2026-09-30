@@ -23,6 +23,8 @@ model user {
   updated_by    Bytes?    @db.Binary(16)
   record_status Boolean?  @default(true)
   profile       String?   @db.VarChar(255)
+  // DTS office this user receives/processes documents for (null = none).
+  dts_office_id Bytes?    @db.Binary(16)
   students      student[]
 
   sponsors     sponsorship[] @relation(name: "sponsorship_sponsor") // Sponsorships where the user is a sponsor
@@ -30,6 +32,9 @@ model user {
 
   role          role           @relation(fields: [role_id], references: [id])
   notifications notification[]
+  dtsOffice     dtsOffice?        @relation("user_dts_office", fields: [dts_office_id], references: [id])
+  dtsTracks     dtsTrack[]        @relation("track_creator")
+  dtsHistory    dtsTrackHistory[] @relation("history_actor")
 
   @@map("users")
 }
@@ -391,6 +396,7 @@ model sponsorship {
   schedule               schedule[]
   criterion              sponsorshipCriterion[]
   pairwise               sponsorshipCriteriaPairwise[]
+  dtsTracks              dtsTrack[]
 
   @@map("sponsorships")
 }
@@ -736,7 +742,7 @@ model notification {
   user_id      Bytes    @db.Binary(16)
   title        String   @db.VarChar(255)
   message      String   @db.Text
-  type         String   @db.VarChar(50) // announcement, application, schedule, system
+  type         String   @db.VarChar(50) // announcement, application, schedule, system, document
   reference_id Bytes?   @db.Binary(16)
   is_read      Boolean  @default(false)
   created_at   DateTime @default(now())
@@ -745,4 +751,167 @@ model notification {
 
   @@index([user_id])
   @@map("notifications")
+}
+// ==========================================
+// Document Tracking System (DTS)
+// ==========================================
+// Setup Manager lookups. Rows are deactivated (is_active = false) or soft
+// deleted (record_status = false), never hard deleted, because historical
+// tracks reference them.
+
+model dtsProcessType {
+  id            Bytes    @id @default(dbgenerated("(UUID_TO_BIN(UUID()))")) @db.Binary(16)
+  name          String   @unique @db.VarChar(150)
+  sort_order    Int      @default(0)
+  is_active     Boolean  @default(true)
+  record_status Boolean  @default(true)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+  created_by    Bytes?   @db.Binary(16)
+  updated_by    Bytes?   @db.Binary(16)
+
+  tracks dtsTrack[]
+
+  @@map("dts_process_types")
+}
+
+model dtsPurpose {
+  id            Bytes    @id @default(dbgenerated("(UUID_TO_BIN(UUID()))")) @db.Binary(16)
+  name          String   @unique @db.VarChar(150)
+  sort_order    Int      @default(0)
+  is_active     Boolean  @default(true)
+  record_status Boolean  @default(true)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+  created_by    Bytes?   @db.Binary(16)
+  updated_by    Bytes?   @db.Binary(16)
+
+  tracks dtsTrack[]
+
+  @@map("dts_purposes")
+}
+
+// A destination office. Users are assigned to one via users.dts_office_id and
+// may only act on tracks currently held by their office.
+model dtsOffice {
+  id            Bytes    @id @default(dbgenerated("(UUID_TO_BIN(UUID()))")) @db.Binary(16)
+  name          String   @unique @db.VarChar(150)
+  sort_order    Int      @default(0)
+  is_active     Boolean  @default(true)
+  record_status Boolean  @default(true)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+  created_by    Bytes?   @db.Binary(16)
+  updated_by    Bytes?   @db.Binary(16)
+
+  users               user[]            @relation("user_dts_office")
+  originTracks        dtsTrack[]        @relation("track_origin_office")
+  currentTracks       dtsTrack[]        @relation("track_current_office")
+  intendedTracks      dtsTrack[]        @relation("track_intended_destination")
+  historyFrom         dtsTrackHistory[] @relation("history_from_office")
+  historyTo           dtsTrackHistory[] @relation("history_to_office")
+  historyActorOffices dtsTrackHistory[] @relation("history_actor_office")
+
+  @@map("dts_offices")
+}
+
+// Per-year counter backing the DTS-YYYY-NNNNNN track number.
+model dtsSequence {
+  year       Int @id
+  last_value Int @default(0)
+
+  @@map("dts_sequences")
+}
+
+model dtsTrack {
+  id                      Bytes            @id @default(dbgenerated("(UUID_TO_BIN(UUID()))")) @db.Binary(16)
+  track_number            String           @unique @db.VarChar(20)
+  title                   String           @db.VarChar(255)
+  particulars             String           @db.Text
+  process_type_id         Bytes            @db.Binary(16)
+  purpose_id              Bytes            @db.Binary(16)
+  sponsorship_id          Bytes            @db.Binary(16)
+  status                  dts_track_status @default(DRAFT)
+  // Office of the creator at creation time; where a fully-returned track lands.
+  origin_office_id        Bytes?           @db.Binary(16)
+  // Office currently holding the track. Null while a draft, or when returned
+  // to a creator who has no office.
+  current_office_id       Bytes?           @db.Binary(16)
+  // Destination chosen on the create form; used when a draft is submitted.
+  intended_destination_id Bytes?           @db.Binary(16)
+  // Optimistic-lock counter, bumped on every state transition.
+  version                 Int              @default(0)
+  submitted_at            DateTime?
+  completed_at            DateTime?
+  completed_by            Bytes?           @db.Binary(16)
+  record_status           Boolean          @default(true)
+  created_at              DateTime         @default(now())
+  updated_at              DateTime         @updatedAt
+  created_by              Bytes            @db.Binary(16)
+  updated_by              Bytes?           @db.Binary(16)
+
+  processType         dtsProcessType    @relation(fields: [process_type_id], references: [id])
+  purpose             dtsPurpose        @relation(fields: [purpose_id], references: [id])
+  sponsorship         sponsorship       @relation(fields: [sponsorship_id], references: [id])
+  originOffice        dtsOffice?        @relation("track_origin_office", fields: [origin_office_id], references: [id], onDelete: Restrict)
+  currentOffice       dtsOffice?        @relation("track_current_office", fields: [current_office_id], references: [id], onDelete: Restrict)
+  intendedDestination dtsOffice?        @relation("track_intended_destination", fields: [intended_destination_id], references: [id], onDelete: Restrict)
+  creator             user              @relation("track_creator", fields: [created_by], references: [id])
+  history             dtsTrackHistory[]
+
+  @@index([status])
+  @@index([current_office_id])
+  @@index([sponsorship_id])
+  @@index([created_by])
+  @@map("dts_tracks")
+}
+
+// Append-only movement log. Office/actor names are snapshotted so the audit
+// trail (and printed PDF) reads as it did at the time of the action even if an
+// office or user is later renamed.
+model dtsTrackHistory {
+  id                Bytes              @id @default(dbgenerated("(UUID_TO_BIN(UUID()))")) @db.Binary(16)
+  track_id          Bytes              @db.Binary(16)
+  // 1-based position within the track; equals the track version after the
+  // action. Unique per track so two concurrent writers cannot both append.
+  sequence          Int
+  action            dts_history_action
+  status            dts_track_status
+  from_office_id    Bytes?             @db.Binary(16)
+  from_office_name  String?            @db.VarChar(150)
+  to_office_id      Bytes?             @db.Binary(16)
+  to_office_name    String?            @db.VarChar(150)
+  remarks           String?            @db.Text
+  actor_user_id     Bytes              @db.Binary(16)
+  actor_name        String             @db.VarChar(255)
+  actor_office_id   Bytes?             @db.Binary(16)
+  actor_office_name String?            @db.VarChar(150)
+  created_at        DateTime           @default(now())
+
+  track       dtsTrack   @relation(fields: [track_id], references: [id])
+  fromOffice  dtsOffice? @relation("history_from_office", fields: [from_office_id], references: [id], onDelete: Restrict)
+  toOffice    dtsOffice? @relation("history_to_office", fields: [to_office_id], references: [id], onDelete: Restrict)
+  actorOffice dtsOffice? @relation("history_actor_office", fields: [actor_office_id], references: [id], onDelete: Restrict)
+  actor       user       @relation("history_actor", fields: [actor_user_id], references: [id])
+
+  @@unique([track_id, sequence])
+  @@map("dts_track_histories")
+}
+
+enum dts_track_status {
+  DRAFT
+  SUBMITTED
+  IN_PROCESSED
+  FORWARDED
+  RETURNED
+  DONE
+}
+
+enum dts_history_action {
+  CREATED
+  SUBMITTED
+  ACCEPTED
+  FORWARDED
+  RETURNED
+  DONE
 }

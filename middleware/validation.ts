@@ -1252,3 +1252,98 @@ export const validateFileId = [
   }),
   validateErrors
 ]
+// ==========================================
+// Document Tracking System (DTS)
+// ==========================================
+// Shape checks only. Existence/active checks against setup lookups, office
+// ownership and status transitions are enforced in documentTracking/service,
+// inside the same transaction as the write.
+
+const DTS_STATUSES = ['DRAFT', 'SUBMITTED', 'IN_PROCESSED', 'FORWARDED', 'RETURNED', 'DONE'];
+
+export const validateDtsTrackId = [
+  param('trackId').isUUID().withMessage(VALIDATION_MESSAGES.DTS_TRACK_ID_INVALID),
+  validateErrors
+];
+
+export const validateDtsTrackPayload = [
+  body('title')
+    .isString().withMessage(VALIDATION_MESSAGES.DTS_TITLE_REQUIRED)
+    .trim().notEmpty().withMessage(VALIDATION_MESSAGES.DTS_TITLE_REQUIRED)
+    .isLength({ max: 255 }).withMessage(VALIDATION_MESSAGES.DTS_TITLE_TOO_LONG),
+  body('particulars')
+    .isString().withMessage(VALIDATION_MESSAGES.DTS_PARTICULARS_REQUIRED)
+    .trim().notEmpty().withMessage(VALIDATION_MESSAGES.DTS_PARTICULARS_REQUIRED),
+  body('processTypeId').isUUID().withMessage(VALIDATION_MESSAGES.DTS_PROCESS_TYPE_REQUIRED),
+  body('purposeId').isUUID().withMessage(VALIDATION_MESSAGES.DTS_PURPOSE_REQUIRED),
+  body('sponsorshipId').isUUID().withMessage(VALIDATION_MESSAGES.DTS_SPONSORSHIP_REQUIRED),
+  body('submit').optional().isBoolean({ strict: true }).withMessage(VALIDATION_MESSAGES.DTS_SUBMIT_FLAG_INVALID),
+  // Optional for a draft; required when submitting.
+  body('destinationId')
+    .if((value, { req }) => req.body.submit === true || (value !== undefined && value !== null && value !== ''))
+    .isUUID().withMessage(VALIDATION_MESSAGES.DTS_DESTINATION_REQUIRED),
+  validateErrors
+];
+
+// Submit a draft/returned track. destinationId falls back to the draft's
+// intended destination, so it is optional here.
+export const validateDtsSubmit = [
+  body('destinationId').optional({ values: 'null' }).isUUID().withMessage(VALIDATION_MESSAGES.DTS_DESTINATION_REQUIRED),
+  body('remarks').optional({ values: 'null' }).isString().withMessage(VALIDATION_MESSAGES.DTS_REMARKS_REQUIRED),
+  validateErrors
+];
+
+export const validateDtsAccept = [
+  body('remarks').optional({ values: 'null' }).isString().withMessage(VALIDATION_MESSAGES.DTS_REMARKS_REQUIRED),
+  validateErrors
+];
+
+export const validateDtsForward = [
+  body('destinationId').isUUID().withMessage(VALIDATION_MESSAGES.DTS_DESTINATION_REQUIRED),
+  body('remarks').isString().trim().notEmpty().withMessage(VALIDATION_MESSAGES.DTS_REMARKS_REQUIRED),
+  validateErrors
+];
+
+// Return and Done both require remarks (return reason / final release details).
+export const validateDtsRemarksRequired = [
+  body('remarks').isString().trim().notEmpty().withMessage(VALIDATION_MESSAGES.DTS_REMARKS_REQUIRED),
+  validateErrors
+];
+
+export const validateDtsListQuery = [
+  query('status').optional({ values: 'falsy' }).isIn(DTS_STATUSES).withMessage(VALIDATION_MESSAGES.DTS_STATUS_FILTER_INVALID),
+  query(['processTypeId', 'purposeId', 'currentOfficeId', 'sponsorshipId'])
+    .optional({ values: 'falsy' }).isUUID().withMessage(VALIDATION_MESSAGES.DTS_SETUP_ID_INVALID),
+  query(['createdFrom', 'createdTo', 'submittedFrom', 'submittedTo'])
+    .optional({ values: 'falsy' }).isISO8601().withMessage(VALIDATION_MESSAGES.DTS_DATE_FILTER_INVALID),
+  validateErrors
+];
+
+export const validateDtsSetupKind = [
+  param('kind').isIn(['process-types', 'purposes', 'offices']).withMessage(VALIDATION_MESSAGES.DTS_SETUP_KIND_INVALID),
+  validateErrors
+];
+
+export const validateDtsSetupId = [
+  param('id').isUUID().withMessage(VALIDATION_MESSAGES.DTS_SETUP_ID_INVALID),
+  validateErrors
+];
+
+const dtsSetupFields = (nameOptional: boolean) => [
+  (nameOptional ? body('name').optional() : body('name'))
+    .isString().withMessage(VALIDATION_MESSAGES.DTS_SETUP_NAME_REQUIRED)
+    .trim().isLength({ min: 1, max: 150 }).withMessage(VALIDATION_MESSAGES.DTS_SETUP_NAME_REQUIRED),
+  body('sortOrder').optional().isInt({ min: 0 }).withMessage(VALIDATION_MESSAGES.DTS_SETUP_SORT_ORDER_INVALID).toInt(),
+  body('isActive').optional().isBoolean({ strict: true }).withMessage(VALIDATION_MESSAGES.DTS_SETUP_IS_ACTIVE_INVALID),
+];
+
+export const validateDtsSetupCreate = [...dtsSetupFields(false), validateErrors];
+export const validateDtsSetupUpdate = [...dtsSetupFields(true), validateErrors];
+
+export const validateDtsUserOffice = [
+  param('userId').isUUID().withMessage(VALIDATION_MESSAGES.USER_ID_REQUIRED),
+  body('officeId')
+    .custom((value) => value === null || (typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value)))
+    .withMessage(VALIDATION_MESSAGES.DTS_OFFICE_ID_INVALID),
+  validateErrors
+];

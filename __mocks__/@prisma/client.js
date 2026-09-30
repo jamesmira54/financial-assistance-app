@@ -8,10 +8,30 @@
 const actual = jest.requireActual('@prisma/client');
 
 const mockPrisma = {
-  sponsorship: { findMany: jest.fn(), count: jest.fn() },
+  sponsorship: { findMany: jest.fn(), count: jest.fn(), findFirst: jest.fn() },
   announcement: { findMany: jest.fn(), count: jest.fn() },
   student: { findFirst: jest.fn() },
-  user: { findUnique: jest.fn() },
+  user: {
+    findUnique: jest.fn(),
+    findFirst: jest.fn(),
+    findMany: jest.fn(),
+    update: jest.fn(),
+  },
+  notification: { create: jest.fn(), createMany: jest.fn() },
+  // Document Tracking System. documentTracking.test.ts backs these with an
+  // in-memory store.
+  dtsProcessType: { findFirst: jest.fn(), findMany: jest.fn(), count: jest.fn(), create: jest.fn(), update: jest.fn() },
+  dtsPurpose: { findFirst: jest.fn(), findMany: jest.fn(), count: jest.fn(), create: jest.fn(), update: jest.fn() },
+  dtsOffice: { findFirst: jest.fn(), findMany: jest.fn(), count: jest.fn(), create: jest.fn(), update: jest.fn() },
+  dtsSequence: { upsert: jest.fn() },
+  dtsTrack: {
+    create: jest.fn(),
+    findFirst: jest.fn(),
+    findMany: jest.fn(),
+    count: jest.fn(),
+    updateMany: jest.fn(),
+  },
+  dtsTrackHistory: { create: jest.fn(), findFirst: jest.fn(), findMany: jest.fn() },
   sponsorshipApplication: {
     findMany: jest.fn(),
     count: jest.fn(),

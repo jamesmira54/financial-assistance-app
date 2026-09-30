@@ -20,6 +20,7 @@ import faqController from "./faq/controller";
 import staticContentController from "./staticContent/controller";
 import publicController from "./public/controller";
 import monitoringController from "./monitoring/controller";
+import documentTrackingController from "./documentTracking/controller";
 
 const routes = Router();
 
@@ -43,6 +44,7 @@ routes.use("/faqs", faqController()); // Public listing, auth required for CRUD
 routes.use("/static-content", staticContentController()); // Public listing, auth required for CRUD
 routes.use("/public", publicController()); // No authentication required
 routes.use("/monitoring", authentication, monitoringController());
+routes.use("/document-tracks", authentication, documentTrackingController());
 
 routes.get("/verify", authentication, (req, res) => {
     res.json({ valid: true, message: "you have access to this api" });

@@ -16,7 +16,7 @@ const prisma = new PrismaClient({
     log: ["query", "info", "warn", "error"],
 });
 
-export type NotificationType = 'announcement' | 'application' | 'schedule' | 'system';
+export type NotificationType = 'announcement' | 'application' | 'schedule' | 'system' | 'document';
 
 export interface NotificationPayload {
     userId: string;

@@ -30,7 +30,9 @@ export const SUCCESS_MESSAGES = {
     SCHOOL_DELETED: "School Successfully deleted",
     ACADEMIC_YEAR_DELETED: "Academic year Successfully deleted",
     SPONSORSHIP_DELETED: "Sponsorship Successfully deleted",
-    ANNOUNCEMENT_DELETED: "Announcement Successfully deleted"
+    ANNOUNCEMENT_DELETED: "Announcement Successfully deleted",
+    DTS_SETUP_DELETED: "Setup record successfully deleted",
+    DTS_DRAFT_DELETED: "Draft track successfully deleted"
 }
 
 export enum APPLICATION_STAGE {
@@ -82,6 +84,46 @@ export const STATUSES_REQUIRING_REMARKS: APPLICATION_STATUS[] = [
     APPLICATION_STATUS.FOLLOW_UP,
     APPLICATION_STATUS.NOT_QUALIFIED,
 ];
+
+// Document Tracking System (DTS) lifecycle. Mirrors the dts_track_status
+// Prisma enum. Transitions are enforced server-side in documentTracking/service.
+export const TRACK_STATUS = {
+    DRAFT: "DRAFT",
+    SUBMITTED: "SUBMITTED",
+    IN_PROCESSED: "IN_PROCESSED",
+    FORWARDED: "FORWARDED",
+    RETURNED: "RETURNED",
+    DONE: "DONE",
+} as const;
+export type TrackStatus = typeof TRACK_STATUS[keyof typeof TRACK_STATUS];
+
+// Mirrors the dts_history_action Prisma enum.
+export const TRACK_HISTORY_ACTION = {
+    CREATED: "CREATED",
+    SUBMITTED: "SUBMITTED",
+    ACCEPTED: "ACCEPTED",
+    FORWARDED: "FORWARDED",
+    RETURNED: "RETURNED",
+    DONE: "DONE",
+} as const;
+export type TrackHistoryAction = typeof TRACK_HISTORY_ACTION[keyof typeof TRACK_HISTORY_ACTION];
+
+// Actions a user can take on a track. SUBMIT/EDIT belong to the creator side;
+// ACCEPT/FORWARD/RETURN/DONE belong to the office currently holding the track.
+export const TRACK_ACTION = {
+    EDIT: "EDIT",
+    SUBMIT: "SUBMIT",
+    ACCEPT: "ACCEPT",
+    FORWARD: "FORWARD",
+    RETURN: "RETURN",
+    DONE: "DONE",
+} as const;
+export type TrackAction = typeof TRACK_ACTION[keyof typeof TRACK_ACTION];
+
+// Role that owns DTS track creation. Office users (any role, typically the
+// seeded "DTS Officer") act on tracks through their users.dts_office_id.
+export const DTS_CREATOR_ROLES = ['system admin', 'financial assistance coordinator'];
+export const DTS_TRACK_NUMBER_PREFIX = 'DTS';
 
 export enum EvaluationStatus {
     PENDING = "PENDING",
@@ -362,4 +404,38 @@ export const VALIDATION_MESSAGES = {
     LIMIT_REACHED: "The number of accepted applicants has already reached its limit.",
     APPLICATION_NOT_FOUND: "Application not found.",
     CANNOT_CANCEL_APPLICATION: "Application can only be cancelled while in the pooling stage.",
+    DTS_TRACK_ID_INVALID: "trackId must be a valid UUID",
+    DTS_TRACK_NOT_FOUND: "Document track not found",
+    DTS_TITLE_REQUIRED: "title is required",
+    DTS_TITLE_TOO_LONG: "title must be at most 255 characters",
+    DTS_PARTICULARS_REQUIRED: "particulars is required",
+    DTS_PROCESS_TYPE_REQUIRED: "processTypeId is required and must be a valid UUID",
+    DTS_PROCESS_TYPE_INVALID: "processTypeId does not match an active process type",
+    DTS_PURPOSE_REQUIRED: "purposeId is required and must be a valid UUID",
+    DTS_PURPOSE_INVALID: "purposeId does not match an active process purpose",
+    DTS_SPONSORSHIP_REQUIRED: "sponsorshipId is required and must be a valid UUID",
+    DTS_DESTINATION_REQUIRED: "destinationId is required and must be a valid UUID",
+    DTS_DESTINATION_INVALID: "destinationId does not match an active destination office",
+    DTS_DESTINATION_SAME_OFFICE: "destination must be a different office from the one currently holding the track",
+    DTS_REMARKS_REQUIRED: "remarks is required for this action",
+    DTS_SUBMIT_FLAG_INVALID: "submit must be a boolean",
+    DTS_STATUS_FILTER_INVALID: "status must be one of: DRAFT | SUBMITTED | IN_PROCESSED | FORWARDED | RETURNED | DONE",
+    DTS_DATE_FILTER_INVALID: "date filters must be valid ISO 8601 dates",
+    DTS_ACTION_NOT_ALLOWED: "This action is not allowed for the track's current status",
+    DTS_NOT_YOUR_OFFICE: "Only users of the office currently holding this track can perform this action",
+    DTS_NOT_CREATOR: "Only the creator of this track can perform this action",
+    DTS_NO_OFFICE: "Your account is not assigned to a DTS office",
+    DTS_VIEW_FORBIDDEN: "You do not have access to this document track",
+    DTS_CONFLICT: "This track was updated by someone else. Reload it and try again",
+    DTS_RETURN_TARGET_NOT_FOUND: "Could not determine which office to return this track to",
+    DTS_NOT_SUBMITTED: "The PDF is only available once the track has been submitted",
+    DTS_SETUP_KIND_INVALID: "setup type must be one of: process-types | purposes | offices",
+    DTS_SETUP_ID_INVALID: "id must be a valid UUID",
+    DTS_SETUP_NOT_FOUND: "Setup record not found",
+    DTS_SETUP_NAME_REQUIRED: "name is required and must be at most 150 characters",
+    DTS_SETUP_NAME_EXISTS: "A record with this name already exists",
+    DTS_SETUP_SORT_ORDER_INVALID: "sortOrder must be a non-negative integer",
+    DTS_SETUP_IS_ACTIVE_INVALID: "isActive must be a boolean",
+    DTS_SETUP_IN_USE: "This office is still holding open document tracks and cannot be deleted",
+    DTS_OFFICE_ID_INVALID: "officeId must be null or the UUID of an active destination office",
 };
