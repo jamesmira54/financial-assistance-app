@@ -24,6 +24,7 @@ const bin = (n: number) => Buffer.alloc(16, n);
 // student + sponsorship (and their nested relations) included.
 const granteeRecord = () => ({
   id: bin(1),
+  app_id: 'APP-001-0001',
   award_number: 'AWD-001-0001',
   application_status: 'AWARDED',
   student: {
@@ -42,6 +43,7 @@ const granteeRecord = () => ({
     name: 'TDP Scholarship',
     batch_number: 1,
     academicYear: { school_term: 1, academic_year_start: 2024, academic_year_end: 2025 },
+    sponsor: { first_name: 'Maria', last_name: 'Reyes' },
   },
 });
 
@@ -67,7 +69,10 @@ describe('GET /api/v1/monitoring/grantees', () => {
     const row = res.body.data.grantees[0];
     expect(row).toMatchObject({
       seq: 1,
+      applicationId: binaryToUuid(bin(1)),
       awardNumber: 'AWD-001-0001',
+      studentNumber: 'APP-001-0001',
+      sponsor: 'Maria Reyes',
       grantName: 'TDP Scholarship',
       batch: 1,
       academicYear: '2024-2025',
@@ -89,7 +94,7 @@ describe('GET /api/v1/monitoring/grantees', () => {
     await auth(request(app).get('/api/v1/monitoring/grantees'));
 
     expect(whereArg().application_status).toEqual({
-      in: ['AWARDED', 'DELISTED', 'GRADUATED'],
+      in: ['AWARDED', 'DELISTED', 'GRADUATED', 'LOA'],
     });
   });
 
@@ -97,6 +102,7 @@ describe('GET /api/v1/monitoring/grantees', () => {
     ['active', 'AWARDED'],
     ['delisted', 'DELISTED'],
     ['graduated', 'GRADUATED'],
+    ['loa', 'LOA'],
   ])('narrows to a single stored status when type=%s', async (type, status) => {
     await auth(request(app).get('/api/v1/monitoring/grantees').query({ type }));
 
@@ -177,11 +183,60 @@ describe('PUT /api/v1/monitoring/grantees/:id/status', () => {
   const updateData = () =>
     __mockPrisma.sponsorshipApplication.update.mock.calls[0][0].data;
 
-  it('graduates an active grantee', async () => {
-    const res = await auth(request(app).put(url)).send({ status: 'GRADUATED' });
+  it('graduates an active grantee when remarks are provided', async () => {
+    const res = await auth(request(app).put(url)).send({
+      status: 'GRADUATED',
+      remarks: 'Graduated on 2026-06-15',
+    });
 
     expect(res.status).toBe(200);
     expect(updateData().application_status).toBe('GRADUATED');
+    expect(updateData().remarks).toBe('Graduated on 2026-06-15');
+  });
+
+  it('puts an active grantee on leave of absence when remarks are provided', async () => {
+    const res = await auth(request(app).put(url)).send({ status: 'LOA', remarks: 'Medical leave' });
+
+    expect(res.status).toBe(200);
+    expect(updateData().application_status).toBe('LOA');
+  });
+
+  it.each(['GRADUATED', 'LOA', 'DELISTED'])('rejects %s without remarks', async (status) => {
+    const res = await auth(request(app).put(url)).send({ status, remarks: '  ' });
+
+    expect(res.status).toBe(400);
+    expect(__mockPrisma.sponsorshipApplication.update).not.toHaveBeenCalled();
+  });
+
+  it('reinstates an LOA grantee to active without requiring remarks', async () => {
+    __mockPrisma.sponsorshipApplication.findFirst.mockResolvedValue({
+      id: bin(1),
+      application_status: 'LOA',
+    });
+
+    const res = await auth(request(app).put(url)).send({ status: 'AWARDED' });
+
+    expect(res.status).toBe(200);
+    expect(updateData().application_status).toBe('AWARDED');
+  });
+
+  it('does not allow an LOA grantee to be graduated directly', async () => {
+    __mockPrisma.sponsorshipApplication.findFirst.mockResolvedValue({
+      id: bin(1),
+      application_status: 'LOA',
+    });
+
+    const res = await auth(request(app).put(url)).send({ status: 'GRADUATED', remarks: 'x' });
+
+    expect(res.status).toBe(400);
+    expect(__mockPrisma.sponsorshipApplication.update).not.toHaveBeenCalled();
+  });
+
+  it('does not reinstate a grantee that is already active', async () => {
+    const res = await auth(request(app).put(url)).send({ status: 'AWARDED' });
+
+    expect(res.status).toBe(400);
+    expect(__mockPrisma.sponsorshipApplication.update).not.toHaveBeenCalled();
   });
 
   it('delists an active grantee when remarks are provided', async () => {
@@ -202,7 +257,7 @@ describe('PUT /api/v1/monitoring/grantees/:id/status', () => {
     expect(__mockPrisma.sponsorshipApplication.update).not.toHaveBeenCalled();
   });
 
-  it('rejects a target status that is not DELISTED or GRADUATED', async () => {
+  it('rejects a target status outside the grantee lifecycle', async () => {
     const res = await auth(request(app).put(url)).send({ status: 'ACTIVE' });
 
     expect(res.status).toBe(400);
@@ -224,7 +279,7 @@ describe('PUT /api/v1/monitoring/grantees/:id/status', () => {
   it('returns not-found when the grantee application does not exist', async () => {
     __mockPrisma.sponsorshipApplication.findFirst.mockResolvedValue(null);
 
-    const res = await auth(request(app).put(url)).send({ status: 'GRADUATED' });
+    const res = await auth(request(app).put(url)).send({ status: 'GRADUATED', remarks: 'x' });
 
     expect(res.status).toBe(400);
     expect(__mockPrisma.sponsorshipApplication.update).not.toHaveBeenCalled();

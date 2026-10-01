@@ -389,6 +389,8 @@ export const getCurrentDtsUser = async (authHeader: string) => {
     officeId: actor.officeId,
     officeName: actor.officeName,
     canCreate: actor.isCreatorRole,
+    // Lets the UI show the read-only Finas Tracking menu to student grantees.
+    isGrantee: actor.granteeSponsorshipIds.length > 0,
   };
 };
 
@@ -398,7 +400,8 @@ export const getTracks = async (authHeader: string, params: QueryParams, filters
   const actor = await loadActor(authHeader);
 
   // Visibility: drafts are private to their creator. Creator roles see every
-  // submitted track; office users see what their office holds or has handled.
+  // submitted track; office users see what their office holds or has handled;
+  // student grantees see submitted tracks of the sponsorships awarded to them.
   let visibility: Prisma.dtsTrackWhereInput;
   if (actor.isStudent) {
     if (!actor.granteeSponsorshipIds.length) return { data: [], total: 0 };

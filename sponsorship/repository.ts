@@ -978,6 +978,7 @@ export const getAllApplicantsByStageRepo = async (
         application_stage: true,
         application_status: true,
         application_date: true,
+        remarks: true,
         student: {
           select: {
             first_name: true,

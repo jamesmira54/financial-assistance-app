@@ -906,6 +906,7 @@ export type SponsorshipApplicantsWithDetails = {
   application_stage: string;
   application_status: string;
   application_date: Date;
+  remarks: string | null;
   student: {
     first_name: string;
     middle_name: string | null;
@@ -940,7 +941,8 @@ export type applicants = {
   yearLevel: number,
   municipality: string,
   finAssname: string,
-  dateOfApp: string
+  dateOfApp: string,
+  remarks: string | null
 }
 
 export type ConvertedGetAllApplicantsByStageResult = {

@@ -65,15 +65,17 @@ export enum APPLICATION_STATUS {
     // Post-award Monitoring (grantee lifecycle) Statuses
     DELISTED = "DELISTED",
     GRADUATED = "GRADUATED",
+    LOA = "LOA", // Leave of Absence; can be reinstated to AWARDED
 }
 
 // The grantee base set surfaced by the Monitoring List. A student becomes a
 // grantee the moment they are AWARDED (which the list presents as "Active") and
-// stays a grantee through delisting/graduation.
+// stays a grantee through delisting/graduation/leave of absence.
 export const GRANTEE_STATUSES: APPLICATION_STATUS[] = [
     APPLICATION_STATUS.AWARDED,
     APPLICATION_STATUS.DELISTED,
     APPLICATION_STATUS.GRADUATED,
+    APPLICATION_STATUS.LOA,
 ];
 
 // Remarks are only required when the coordinator gives a negative / needs-action
@@ -191,9 +193,9 @@ export const TableColumnMap: Record<TableEnum, ColumnEnum[]> = {
 
 export const VALIDATION_MESSAGES = {
     GRANTEE_NOT_FOUND: 'Grantee application not found',
-    GRANTEE_NOT_ACTIVE: 'Only an active grantee can be delisted or graduated',
-    INVALID_GRANTEE_STATUS: 'Grantee status must be DELISTED or GRADUATED',
-    DELIST_REMARKS_REQUIRED: 'Remarks are required when delisting a grantee',
+    GRANTEE_NOT_ACTIVE: "This status change is not allowed for the grantee's current status",
+    INVALID_GRANTEE_STATUS: 'Grantee status must be DELISTED, GRADUATED, LOA, or AWARDED (reinstate)',
+    GRANTEE_REMARKS_REQUIRED: 'Remarks are required when delisting, graduating, or placing a grantee on leave of absence',
     FIRST_NAME_REQUIRED: 'First name is required and should be a string',
     LAST_NAME_REQUIRED: 'Last name is required and should be a string',
     EMAIL_INVALID: 'Invalid email address',

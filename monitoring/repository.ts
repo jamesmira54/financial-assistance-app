@@ -14,7 +14,12 @@ export const getGranteesRepo = async (
       where,
       include: {
         student: { include: { college_school: true } },
-        sponsorship: { include: { academicYear: true } },
+        sponsorship: {
+          include: {
+            academicYear: true,
+            sponsor: { select: { first_name: true, last_name: true } },
+          },
+        },
       },
       orderBy: { created_at: "desc" },
       skip: offset,

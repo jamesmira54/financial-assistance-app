@@ -816,5 +816,6 @@ export const toConvertedApplicants = ( payload: SponsorshipApplicantsWithDetails
     municipality: payload.student.permanent_citynum.citymun_desc,
     finAssname: payload.sponsorship.name,
     dateOfApp: payload.application_date.toISOString(),
+    remarks: payload.remarks ?? null,
   }
 }

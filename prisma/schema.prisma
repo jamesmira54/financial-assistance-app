@@ -633,6 +633,7 @@ enum application_status {
   // Post-award Monitoring (grantee lifecycle) Statuses
   DELISTED
   GRADUATED
+  LOA // Leave of Absence; can be reinstated to AWARDED
 }
 
 enum EvaluationStatus {

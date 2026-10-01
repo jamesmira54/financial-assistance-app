@@ -557,6 +557,12 @@ describe('authorization', () => {
 });
 
 describe('students (grantees)', () => {
+  it('reports isGrantee on /me only for students with a grantee application', async () => {
+    expect((await as('grantee')(request(app).get(`${BASE}/me`))).body.data).toMatchObject({ isGrantee: true, canCreate: false });
+    expect((await as('rejected')(request(app).get(`${BASE}/me`))).body.data.isGrantee).toBe(false);
+    expect((await as('coordinator')(request(app).get(`${BASE}/me`))).body.data.isGrantee).toBe(false);
+  });
+
   const fullJourney = async () => {
     const t = await createSubmitted();
     await act('accounting', t.id, 'accept', { remarks: 'Internal: checked by Ana' });
