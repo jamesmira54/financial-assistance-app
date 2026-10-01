@@ -28,10 +28,12 @@ const matchValue = (actual: any, cond: any): boolean => {
   if (isBin(cond)) return binEq(actual, cond);
   if (cond === null) return actual === null || actual === undefined;
   if (typeof cond === 'object' && !(cond instanceof Date)) {
-    if ('in' in cond) return cond.in.includes(actual);
+    if ('in' in cond) return cond.in.some((v: any) => (isBin(v) ? binEq(actual, v) : v === actual));
     if ('notIn' in cond) return !cond.notIn.includes(actual);
     if ('not' in cond) return actual !== cond.not;
     if ('contains' in cond) return String(actual ?? '').includes(cond.contains);
+    // Nested relation filter, e.g. { student: { user_id } }.
+    if (actual && typeof actual === 'object' && !isBin(actual)) return matches(actual, cond);
   }
   return actual === cond;
 };
@@ -97,6 +99,10 @@ const installStore = () => {
     Object.assign(u, data);
     return withUserRelations(u);
   });
+  // Applications embed their student, so both repo selects (sponsorship_id, and
+  // student.user_id) are satisfied by returning whole rows.
+  __mockPrisma.sponsorshipApplication.findMany.mockImplementation(async ({ where }: Row) =>
+    db.sponsorshipApplication.filter((a) => matches(a, where)));
   __mockPrisma.sponsorship.findFirst.mockImplementation(async ({ where }: Row) => db.sponsorship.find((s) => matches(s, where)) ?? null);
   __mockPrisma.notification.createMany.mockImplementation(async ({ data }: Row) => {
     db.notification.push(...data);
@@ -176,12 +182,19 @@ const addUser = (key: string, roleName: string, officeId: string | null) => {
   users[key] = { id, token: jwt.sign({ email: `${key}@example.com`, userId: id }, process.env.SECRET_KEY as string, { expiresIn: '1h' }) };
 };
 
+const addApplication = (key: string, sponsorshipId: string, status: string) => {
+  db.sponsorshipApplication.push({
+    sponsorship_id: uuidToBinary(sponsorshipId), application_status: status, record_status: true,
+    student: { user_id: uuidToBinary(users[key].id), record_status: true },
+  });
+};
+
 const as = (key: string) => (req: request.Test) => req.set('Authorization', `Bearer ${users[key].token}`);
 
 beforeEach(() => {
   jest.clearAllMocks();
   db = {
-    role: [], user: [], sponsorship: [], notification: [], dtsSequence: [], dtsTrack: [], dtsTrackHistory: [],
+    role: [], user: [], sponsorship: [], sponsorshipApplication: [], notification: [], dtsSequence: [], dtsTrack: [], dtsTrackHistory: [],
     dtsProcessType: [{ ...office(ids.processType, 'For Processing') }],
     dtsPurpose: [{ ...office(ids.purpose, 'Scholarship/Assistance Voucher') }],
     dtsOffice: [
@@ -199,6 +212,11 @@ beforeEach(() => {
   addUser('treasury', 'DTS Officer', ids.treasury);
   addUser('budget', 'DTS Officer', ids.budget);
   addUser('student', 'Student', null);
+  // Grantee students of the sponsorship, plus a rejected applicant.
+  addUser('grantee', 'Student', null);
+  addUser('rejected', 'Student', null);
+  addApplication('grantee', ids.sponsorship, 'AWARDED');
+  addApplication('rejected', ids.sponsorship, 'REJECTED');
   installStore();
 });
 
@@ -521,7 +539,8 @@ describe('authorization', () => {
   });
 
   it('rejects users with no office and no creator role', async () => {
-    expect((await as('student')(request(app).get(BASE))).status).toBe(400);
+    addUser('sponsor', 'Sponsor', null);
+    expect((await as('sponsor')(request(app).get(BASE))).status).toBe(400);
   });
 
   it('requires authentication', async () => {
@@ -534,6 +553,106 @@ describe('authorization', () => {
     // Submitted tracks aren't editable at all, and status isn't an editable field.
     expect(res.status).toBe(400);
     expect(db.dtsTrack[0].status).toBe('SUBMITTED');
+  });
+});
+
+describe('students (grantees)', () => {
+  const fullJourney = async () => {
+    const t = await createSubmitted();
+    await act('accounting', t.id, 'accept', { remarks: 'Internal: checked by Ana' });
+    await act('accounting', t.id, 'forward', { destinationId: ids.treasury, remarks: 'Internal: for release' });
+    return t;
+  };
+
+  it('lets a grantee follow a track of their sponsorship, without remarks or staff names', async () => {
+    const t = await fullJourney();
+    const res = await as('grantee')(request(app).get(`${BASE}/${t.id}`));
+
+    expect(res.status).toBe(200);
+    const v = res.body.data;
+    expect(v).toMatchObject({ status: 'FORWARDED', currentHolder: 'Treasury Office', createdBy: null, allowedActions: [] });
+    expect(v.history.map((h: any) => [h.action, h.fromOffice, h.toOffice])).toEqual([
+      ['CREATED', 'Scholarship Office', null],
+      ['SUBMITTED', 'Scholarship Office', 'Accounting Office'],
+      ['ACCEPTED', 'Scholarship Office', 'Accounting Office'],
+      ['FORWARDED', 'Accounting Office', 'Treasury Office'],
+    ]);
+    expect(v.history.every((h: any) => h.remarks === null && h.actor === null)).toBe(true);
+    expect(JSON.stringify(v)).not.toContain('Internal:');
+    expect(JSON.stringify(v)).not.toContain('coordinator User');
+
+    const history = await as('grantee')(request(app).get(`${BASE}/${t.id}/history`));
+    expect(history.body.data.every((h: any) => h.remarks === null && h.actor === null)).toBe(true);
+  });
+
+  it('staff still see remarks and names on the same track', async () => {
+    const t = await fullJourney();
+    const res = await as('coordinator')(request(app).get(`${BASE}/${t.id}`));
+    expect(res.body.data.createdBy).not.toBeNull();
+    expect(res.body.data.history[2].remarks).toBe('Internal: checked by Ana');
+  });
+
+  it('scopes a grantee list to their sponsorships and never includes drafts', async () => {
+    await fullJourney();
+    const res = await as('grantee')(request(app).get(BASE));
+    expect(res.status).toBe(200);
+    const calls = __mockPrisma.dtsTrack.findMany.mock.calls;
+    const where = calls[calls.length - 1][0].where;
+    const visibility = where.AND[0];
+    expect(visibility.status).toEqual({ not: 'DRAFT' });
+    expect(visibility.sponsorship_id.in.map((b: any) => Buffer.from(b).toString('hex')))
+      .toEqual([Buffer.from(uuidToBinary(ids.sponsorship)).toString('hex')]);
+  });
+
+  it('gives a student with no grant an empty list, not an error', async () => {
+    await fullJourney();
+    const res = await as('student')(request(app).get(BASE));
+    expect(res.status).toBe(200);
+    expect(res.body.data).toEqual({ data: [], total: 0 });
+  });
+
+  it('blocks non-grantees and drafts', async () => {
+    const t = await fullJourney();
+    expect((await as('rejected')(request(app).get(`${BASE}/${t.id}`))).status).toBe(400);
+    expect((await as('student')(request(app).get(`${BASE}/${t.id}`))).status).toBe(400);
+
+    const draft = (await as('coordinator')(request(app).post(BASE)).send(payload())).body.data;
+    expect((await as('grantee')(request(app).get(`${BASE}/${draft.id}`))).status).toBe(400);
+  });
+
+  it('is read-only for grantees', async () => {
+    const t = await createSubmitted();
+    for (const [action, body] of [
+      ['accept', {}], ['return', { remarks: 'x' }], ['submit', {}],
+    ] as const) {
+      expect((await act('grantee', t.id, action, body)).status).toBe(400);
+    }
+    expect((await as('grantee')(request(app).post(BASE)).send(payload())).status).toBe(400);
+    expect(db.dtsTrack[0].status).toBe('SUBMITTED');
+  });
+
+  it('prints a redacted PDF for a grantee', async () => {
+    const t = await fullJourney();
+    const res = await as('grantee')(request(app).get(`${BASE}/${t.id}/pdf`));
+    expect(res.status).toBe(200);
+    expect(res.headers['content-type']).toBe('application/pdf');
+  });
+
+  it('notifies grantees only when the track is done', async () => {
+    const t = await fullJourney();
+    const granteeBin = Buffer.from(uuidToBinary(users.grantee.id));
+    const forGrantee = () => db.notification.filter((n) => Buffer.from(n.user_id).equals(granteeBin));
+    expect(forGrantee()).toHaveLength(0);
+
+    await act('treasury', t.id, 'accept');
+    await act('treasury', t.id, 'done', { remarks: 'Released' });
+
+    expect(forGrantee()).toHaveLength(1);
+    expect(forGrantee()[0]).toMatchObject({ title: 'Document processing completed', type: 'document' });
+    expect(forGrantee()[0].message).not.toContain('Released');
+    // The rejected applicant is not a grantee.
+    const rejectedBin = Buffer.from(uuidToBinary(users.rejected.id));
+    expect(db.notification.some((n) => Buffer.from(n.user_id).equals(rejectedBin))).toBe(false);
   });
 });
 

@@ -94,12 +94,14 @@ export const getAllAnnouncementData = async ( params: QueryParams, prisma: Prism
         whereCondition.created_by = uuidToBinary(userId)
     }
 
+    // Announcements with no target municipality are shown everywhere.
     if( params.cityMunId && params.cityMunId !== null) {
-        whereCondition.locations = {
-            some: {
-                citymun_id: params.cityMunId
-            }
-        };
+        whereCondition.AND = [{
+            OR: [
+                { locations: { some: { citymun_id: params.cityMunId } } },
+                { locations: { none: {} } }
+            ]
+        }];
     }
 
     return await prisma.announcement.findMany({
@@ -113,6 +115,7 @@ export const getAllAnnouncementData = async ( params: QueryParams, prisma: Prism
             content: true,
             caption: true,
             sponsorship_id: true,
+            created_at: true,
         }
     })
 }
@@ -134,10 +137,14 @@ export const getAllPublicAnnouncementData = async ( params: QueryParams, prisma:
         ];
     }
 
+    // Announcements with no target municipality are shown everywhere.
     if (params.cityMunId && params.cityMunId !== null) {
-        whereCondition.locations = {
-            some: { citymun_id: params.cityMunId }
-        };
+        whereCondition.AND = [{
+            OR: [
+                { locations: { some: { citymun_id: params.cityMunId } } },
+                { locations: { none: {} } }
+            ]
+        }];
     }
 
     const [data, total] = await Promise.all([

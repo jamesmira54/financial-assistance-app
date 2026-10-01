@@ -551,7 +551,7 @@ export type AnnouncementPayloadString = {
   title: string;
   content: string;
   caption: string;
-  targetMunicipalitys: number[];
+  targetMunicipalitys?: number[];
   sponsorshipId: string;
 }
 
@@ -595,6 +595,7 @@ export type AnnouncementDataMinimal = {
   content: string;
   caption: string;
   sponsorship_id: Uint8Array;
+  created_at: Date | null;
 };
 
 export type FlattenedAnnouncementData = {
@@ -608,11 +609,12 @@ export type FlattenedAnnouncementData = {
 };
 
 export type FlattenedAnnouncementDataMinimal = {
-  id: string; 
+  id: string;
   title: string;
   content: string;
   caption: string;
   sponsorshipId: string;
+  date_posted: Date | null;
 };
 
 

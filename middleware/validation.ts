@@ -870,19 +870,24 @@ export const createAnnouncementValidation = [
     .trim()
     .isString().withMessage(VALIDATION_MESSAGES.ANN_CAPTION_INVALID)
     .notEmpty().withMessage(VALIDATION_MESSAGES.ANN_CAPTION_REQUIRED),
+  // Optional: omitted or an empty array means the announcement targets every
+  // municipality (see the cityMunId filters in announcement/repository.ts).
   body("targetMunicipalitys")
+    .optional({ values: "falsy" })
     .customSanitizer((value) => {
-      if (typeof value === "string" || typeof value === "undefined") {
+      if (typeof value === "string") {
+        // Invalid JSON is left as-is so isArray reports it as a 400. Throwing
+        // from a sanitizer is not caught by express-validator and becomes a 500.
         try {
           return JSON.parse(value);
         } catch {
-          throw new Error(VALIDATION_MESSAGES.ANN_MUN_INVALID_FORMAT);
+          return value;
         }
       }
-      return value.map((num: any) => Number(num));
+      return Array.isArray(value) ? value.map((num: any) => Number(num)) : value;
     })
     .trim()
-    .isArray({ min: 1 }).withMessage(VALIDATION_MESSAGES.ANN_MUN_EMPTY)
+    .isArray().withMessage(VALIDATION_MESSAGES.ANN_MUN_INVALID_FORMAT)
     .custom((values) => values.every((v: number) => typeof Number(v) === "number"))
     .withMessage(VALIDATION_MESSAGES.ANN_MUN_INVALID_ITEMS)
     .custom(async (values: number[]) => {

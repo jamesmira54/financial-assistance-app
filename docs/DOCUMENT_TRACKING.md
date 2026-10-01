@@ -41,7 +41,10 @@ DRAFT ──SUBMIT──▶ SUBMITTED ──ACCEPT──▶ IN_PROCESSED ──F
 - Drafts are visible only to their creator.
 - Admins and coordinators see all non-draft tracks.
 - Office users see tracks their office holds or has sent/received (from history).
-- Users with no office and no creator role get an error.
+- Students see, read-only, the non-draft tracks of sponsorships they are a grantee of
+  (application AWARDED/DELISTED/GRADUATED). Their responses and PDF are redacted: history
+  `remarks` and `actor` are null and `createdBy` is null. Grantees are notified once, on DONE.
+- Other users with no office and no creator role (e.g. sponsors) get an error.
 
 ## API
 

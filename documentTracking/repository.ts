@@ -186,6 +186,36 @@ export const findLatestInboundRepo = (db: Db, trackId: Bin, officeId: Bin) =>
     orderBy: { sequence: "desc" },
   });
 
+// ---------------------------------------------------------------- students
+
+// Sponsorships in which this user's student record is a grantee. A student may
+// view (read-only) the tracks of these sponsorships.
+export const findGranteeSponsorshipIdsRepo = async (db: Db, userId: string, statuses: string[]): Promise<Bin[]> => {
+  const rows = await db.sponsorshipApplication.findMany({
+    where: {
+      record_status: RecordStatus.ACTIVE,
+      application_status: { in: statuses as any },
+      student: { user_id: uuidToBinary(userId), record_status: RecordStatus.ACTIVE },
+    },
+    select: { sponsorship_id: true },
+  });
+  return rows.map((r) => r.sponsorship_id as Bin);
+};
+
+// User ids of every grantee of a sponsorship, for completion notifications.
+export const listGranteeUserIdsRepo = async (db: Db, sponsorshipId: Bin, statuses: string[]): Promise<Bin[]> => {
+  const rows = await db.sponsorshipApplication.findMany({
+    where: {
+      sponsorship_id: sponsorshipId,
+      record_status: RecordStatus.ACTIVE,
+      application_status: { in: statuses as any },
+      student: { record_status: RecordStatus.ACTIVE },
+    },
+    select: { student: { select: { user_id: true } } },
+  });
+  return rows.map((r) => r.student.user_id as Bin);
+};
+
 export const findActiveSponsorshipRepo = (db: Db, sponsorshipId: string) =>
   db.sponsorship.findFirst({
     where: { id: uuidToBinary(sponsorshipId), record_status: RecordStatus.ACTIVE },

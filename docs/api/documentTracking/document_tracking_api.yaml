@@ -32,6 +32,11 @@ info:
     - Visibility: drafts are private to their creator. Admins/coordinators see all non-draft
       tracks. Office users see tracks their office holds or has sent/received.
 
+    - Students: a grantee (application AWARDED, DELISTED or GRADUATED) can view, read-only, the
+      non-draft tracks of their sponsorships. In a student's view, internal `remarks` and staff
+      identities are removed: every history entry has `remarks: null` and `actor: null`, and the
+      track has `createdBy: null`. Grantees are notified once, when a track is marked DONE.
+
     Status, current office, actor and timestamps are always set by the server, and any such
     fields in a request body are ignored. Each track response includes `allowedActions` for
     the calling user.
@@ -706,8 +711,13 @@ components:
         fromOfficeId: { type: string, format: uuid, nullable: true }
         toOffice: { type: string, nullable: true, example: "Accounting Office" }
         toOfficeId: { type: string, format: uuid, nullable: true }
-        remarks: { type: string, nullable: true }
-        actor: { $ref: "#/components/schemas/TrackActor" }
+        remarks: { type: string, nullable: true, description: "Always null in a student's view" }
+        actor:
+          type: object
+          allOf:
+            - $ref: "#/components/schemas/TrackActor"
+          nullable: true
+          description: "Always null in a student's view"
         at: { type: string, format: date-time }
 
     DocumentTrack:
@@ -728,13 +738,15 @@ components:
         currentHolder:
           type: string
           example: "Accounting Office"
-          description: "Holding office name, or the creator's name when no office holds it (draft / returned to an office-less creator)"
+          description: "Holding office name, or the creator's name when no office holds it (draft / returned to an office-less creator). Students get the origin office name instead of a staff name."
         originOfficeId: { type: string, format: uuid, nullable: true }
         originOffice: { type: string, nullable: true, example: "Scholarship Office" }
         intendedDestinationId: { type: string, format: uuid, nullable: true }
         intendedDestination: { type: string, nullable: true }
         createdBy:
           type: object
+          nullable: true
+          description: "Null in a student's view"
           properties:
             userId: { type: string, format: uuid }
             name: { type: string }

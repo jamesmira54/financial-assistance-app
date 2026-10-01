@@ -4,6 +4,7 @@ import {
   DTS_CREATOR_ROLES,
   DTS_TRACK_NUMBER_PREFIX,
   extractUserFromToken,
+  GRANTEE_STATUSES,
   QueryParams,
   RecordStatus,
   TRACK_ACTION,
@@ -24,11 +25,13 @@ import {
   findActiveSetupRepo,
   findActiveSponsorshipRepo,
   findActorRepo,
+  findGranteeSponsorshipIdsRepo,
   findLatestInboundRepo,
   findSetupByIdRepo,
   findSetupByNameRepo,
   findTrackRepo,
   findUserRepo,
+  listGranteeUserIdsRepo,
   listHistoryRepo,
   listOfficeUsersRepo,
   listSetupRepo,
@@ -65,7 +68,8 @@ export interface TrackHistoryEntry {
   toOffice: string | null;
   toOfficeId: string | null;
   remarks: string | null;
-  actor: TrackActor;
+  // null in a student's view: staff identities are not shown to students.
+  actor: TrackActor | null;
   at: string;
 }
 
@@ -87,7 +91,8 @@ export interface DocumentTrackResponse {
   originOffice: string | null;
   intendedDestinationId: string | null;
   intendedDestination: string | null;
-  createdBy: { userId: string; name: string };
+  // null in a student's view.
+  createdBy: { userId: string; name: string } | null;
   createdAt: string;
   submittedAt: string | null;
   completedAt: string | null;
@@ -131,6 +136,9 @@ interface Actor {
   officeId: string | null;
   officeName: string | null;
   isCreatorRole: boolean;
+  isStudent: boolean;
+  // Sponsorships the student is a grantee of (empty for non-students).
+  granteeSponsorshipIds: Bin[];
 }
 
 // ============================================================ workflow rules
@@ -225,6 +233,7 @@ const loadActor = async (authHeader: string): Promise<Actor> => {
   }
   const role = (user.role?.name ?? "").toLowerCase();
   const office = user.dtsOffice && user.dtsOffice.record_status !== RecordStatus.DELETED ? user.dtsOffice : null;
+  const isStudent = role === "student";
   return {
     userId,
     userIdBin: uuidToBinary(userId),
@@ -233,6 +242,8 @@ const loadActor = async (authHeader: string): Promise<Actor> => {
     officeId: office ? binaryToUuid(office.id) : null,
     officeName: office?.name ?? null,
     isCreatorRole: DTS_CREATOR_ROLES.includes(role),
+    isStudent,
+    granteeSponsorshipIds: isStudent ? await findGranteeSponsorshipIdsRepo(prisma, userId, GRANTEE_STATUSES) : [],
   };
 };
 
@@ -242,6 +253,11 @@ const assertCanView = async (track: any, actor: Actor, db: any = prisma) => {
     throw new DtsForbiddenError(VALIDATION_MESSAGES.DTS_VIEW_FORBIDDEN);
   }
   if (actor.isCreatorRole) return;
+  // Grantees can follow (read-only) the tracks of their own sponsorships.
+  if (actor.isStudent) {
+    if (actor.granteeSponsorshipIds.some((id) => sameId(id, track.sponsorship_id))) return;
+    throw new DtsForbiddenError(VALIDATION_MESSAGES.DTS_VIEW_FORBIDDEN);
+  }
   if (!actor.officeId) throw new DtsForbiddenError(VALIDATION_MESSAGES.DTS_NO_OFFICE);
   if (isHolder(track, actor)) return;
 
@@ -253,7 +269,9 @@ const assertCanView = async (track: any, actor: Actor, db: any = prisma) => {
   if (!involved) throw new DtsForbiddenError(VALIDATION_MESSAGES.DTS_VIEW_FORBIDDEN);
 };
 
-const toHistoryEntry = (h: any): TrackHistoryEntry => ({
+// `redact` (a student's view) drops internal remarks and staff identities but
+// keeps the movement itself: action, offices and time.
+const toHistoryEntry = (h: any, redact = false): TrackHistoryEntry => ({
   sequence: h.sequence,
   action: h.action,
   status: h.status,
@@ -261,8 +279,8 @@ const toHistoryEntry = (h: any): TrackHistoryEntry => ({
   fromOfficeId: idOrNull(h.from_office_id),
   toOffice: h.to_office_name ?? null,
   toOfficeId: idOrNull(h.to_office_id),
-  remarks: h.remarks ?? null,
-  actor: {
+  remarks: redact ? null : h.remarks ?? null,
+  actor: redact ? null : {
     userId: binaryToUuid(h.actor_user_id),
     name: h.actor_name,
     office: h.actor_office_name ?? "",
@@ -288,18 +306,18 @@ const toTrackResponse = (track: any, actor: Actor): DocumentTrackResponse => {
     currentOfficeId: idOrNull(track.current_office_id),
     // With no office (a draft, or returned to an office-less creator) the
     // document is physically with its creator.
-    currentHolder: track.currentOffice?.name ?? creatorName,
+    currentHolder: track.currentOffice?.name ?? (actor.isStudent ? track.originOffice?.name ?? "Scholarship Coordinator" : creatorName),
     originOfficeId: idOrNull(track.origin_office_id),
     originOffice: track.originOffice?.name ?? null,
     intendedDestinationId: idOrNull(track.intended_destination_id),
     intendedDestination: track.intendedDestination?.name ?? null,
-    createdBy: { userId: binaryToUuid(track.created_by), name: creatorName },
+    createdBy: actor.isStudent ? null : { userId: binaryToUuid(track.created_by), name: creatorName },
     createdAt: iso(track.created_at),
     submittedAt: iso(track.submitted_at),
     completedAt: iso(track.completed_at),
     allowedActions: allowedActionsFor(track, actor),
   };
-  if (track.history) response.history = track.history.map(toHistoryEntry);
+  if (track.history) response.history = track.history.map((h: any) => toHistoryEntry(h, actor.isStudent));
   return response;
 };
 
@@ -382,7 +400,10 @@ export const getTracks = async (authHeader: string, params: QueryParams, filters
   // Visibility: drafts are private to their creator. Creator roles see every
   // submitted track; office users see what their office holds or has handled.
   let visibility: Prisma.dtsTrackWhereInput;
-  if (actor.isCreatorRole) {
+  if (actor.isStudent) {
+    if (!actor.granteeSponsorshipIds.length) return { data: [], total: 0 };
+    visibility = { status: { not: "DRAFT" }, sponsorship_id: { in: actor.granteeSponsorshipIds } };
+  } else if (actor.isCreatorRole) {
     visibility = { OR: [{ status: { not: "DRAFT" } }, { created_by: actor.userIdBin }] };
   } else if (actor.officeId) {
     const office = uuidToBinary(actor.officeId);
@@ -442,7 +463,7 @@ export const getTrack = async (trackId: string, authHeader: string) => {
 export const getTrackHistory = async (trackId: string, authHeader: string) => {
   const actor = await loadActor(authHeader);
   const track = await loadVisibleTrack(trackId, actor);
-  return track.history.map(toHistoryEntry);
+  return track.history.map((h: any) => toHistoryEntry(h, actor.isStudent));
 };
 
 // For the PDF: the persisted track + history, after the same view checks.
@@ -748,7 +769,22 @@ export const completeTrack = async (trackId: string, fields: ReceiverActionField
   });
   await notifyOffice(null, updated.created_by, "Document completed",
     `${updated.track_number} "${updated.title}" has been marked as done.`, trackId);
+  await notifyGrantees(updated.sponsorship_id, "Document processing completed",
+    `${updated.track_number} "${updated.title}" for ${updated.sponsorship?.name ?? "your sponsorship"} has finished processing.`, trackId);
   return response;
+};
+
+// Grantees are told only when processing completes, not on every office hop.
+// Best-effort, like notifyOffice.
+const notifyGrantees = async (sponsorshipId: Bin, title: string, message: string, trackId: string) => {
+  try {
+    const recipients = (await listGranteeUserIdsRepo(prisma, sponsorshipId, GRANTEE_STATUSES)).map(binaryToUuid);
+    if (recipients.length) {
+      await createNotificationsForUsers(recipients, title, message, "document", trackId);
+    }
+  } catch (err) {
+    console.error("DTS grantee notification failed:", err);
+  }
 };
 
 // ============================================================ setup manager

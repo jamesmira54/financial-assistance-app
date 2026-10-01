@@ -638,7 +638,8 @@ export const toAnnouncementMinimalResponse = ( data: AnnouncementDataMinimal ): 
     title: data.title,
     content: data.content,
     caption: data.caption,
-    sponsorshipId: binaryToUuid(data.sponsorship_id)
+    sponsorshipId: binaryToUuid(data.sponsorship_id),
+    date_posted: data.created_at
   };
 }
 

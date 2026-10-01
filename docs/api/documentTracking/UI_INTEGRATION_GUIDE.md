@@ -71,7 +71,8 @@ to the current holder. The client never picks it. Two cases:
 | Track creator | Edit and submit their own draft; edit and resubmit when it's returned to the origin; discard their draft. |
 | Users of the **holding office** | ACCEPT / FORWARD / RETURN / DONE, whichever `allowedActions` lists. |
 | Users of an office that **previously handled** the track | View it, see its history and print it, read-only. |
-| Everyone else (other offices, students, sponsors) | Nothing. The track doesn't appear in their list, and direct access is refused. |
+| **Students who are grantees** of the track's sponsorship (application `AWARDED`, `DELISTED` or `GRADUATED`) | View it read-only, without internal remarks or staff names (see 4.11). |
+| Everyone else (other offices, non-grantee students, sponsors) | Nothing. The track doesn't appear in their list, and direct access is refused. |
 
 Drafts are visible **only to their creator**.
 
@@ -268,7 +269,34 @@ and `referenceId` set to the **track id**. Route a click to `/document-tracks/{r
 | Submitted / resubmitted | every user of the destination office |
 | Forwarded | every user of the destination office |
 | Returned | every user of the office it returns to, or the creator if they have no office |
-| Done | the creator |
+| Done | the creator, **and every grantee of the track's sponsorship** |
+
+### 4.11 Student view ("Track my documents")
+Students use the same endpoints with their own token. No separate API is needed.
+
+| Screen | Request |
+|---|---|
+| My documents list | `GET /document-tracks` (returns only non-draft tracks of sponsorships the student is a grantee of) |
+| Document status | `GET /document-tracks/{id}` |
+| Print | `GET /document-tracks/{id}/pdf` (redacted, same as below) |
+
+A student's responses are **redacted**:
+- every history entry has `remarks: null` and `actor: null`
+- the track has `createdBy: null`
+- `currentHolder` never shows a staff name (it falls back to the origin office)
+- `allowedActions` is always `[]`
+
+So the student UI should:
+- show the **status badge**, the **"Currently with" office** and a **timeline of offices and dates**
+- **hide** the action area, the remarks and the actor column
+- handle `actor` being `null` in the timeline component if it's shared with staff screens
+
+A student with no grants gets an **empty list** (`{ data: [], total: 0 }`), not an error, so show
+an empty state such as "No documents are being processed for your scholarship yet". Students
+can't use `inbox=true` (they have no office).
+
+Grantees get **one notification per track, when it's marked Done** (e.g. "…has finished
+processing"), not on every office hop.
 
 ---
 
@@ -342,8 +370,8 @@ export interface TrackHistoryEntry {
   fromOfficeId: string | null;
   toOffice: string | null;
   toOfficeId: string | null;
-  remarks: string | null;
-  actor: TrackActor;
+  remarks: string | null; // always null for students
+  actor: TrackActor | null; // always null for students
   at: string;              // ISO 8601, UTC
 }
 
@@ -365,7 +393,7 @@ export interface DocumentTrack {
   originOffice: string | null;
   intendedDestinationId: string | null;
   intendedDestination: string | null;
-  createdBy: { userId: string; name: string };
+  createdBy: { userId: string; name: string } | null; // null for students
   createdAt: string;
   submittedAt: string | null;   // first submission; kept on resubmit
   completedAt: string | null;
@@ -431,6 +459,7 @@ export interface Paginated<T> { data: T[]; total: number }
 - [ ] Timestamps are UTC ISO strings. Display them in local time (Asia/Manila).
 - [ ] List items have no `history`; the detail page does.
 - [ ] Drafts only ever appear for their creator.
+- [ ] In the student view, `actor`, `remarks` and `createdBy` are `null`. Don't crash on them.
 
 ---
 
@@ -450,6 +479,10 @@ npm run dts-test-setup -- --reset # also deletes the test coordinator's tracks
 | `dts.accounting` | Accounting Office | receive, forward, return, complete |
 | `dts.treasury` | Treasury Office | receive a forwarded track |
 | `dts.budget` | Budget Office | check that an uninvolved office is blocked |
+| `dts.student` | none (grantee of **DTS Test Sponsorship**) | the student's read-only, redacted view |
+
+Create test tracks with the printed **DTS Test Sponsorship** id, so marking them Done notifies only
+`dts.student`, not real grantees.
 
 A happy-path click-through: coordinator creates and submits to Accounting → accounting accepts
 and forwards to Treasury → treasury accepts and returns it → accounting accepts again and marks

@@ -121,15 +121,45 @@ beforeAll(async () => {
 
   const processType = await prisma.dtsProcessType.findFirst({ where: { name: 'For Processing', is_active: true, record_status: true } });
   const purpose = await prisma.dtsPurpose.findFirst({ where: { name: 'Scholarship/Assistance Voucher', is_active: true, record_status: true } });
-  const sponsorship = await prisma.sponsorship.findFirst({ where: { record_status: true }, orderBy: { created_at: 'desc' } });
   if (!processType || !purpose) throw new Error('DTS process types/purposes missing — run npm run prisma-dts.');
-  if (!sponsorship) throw new Error('No active sponsorship in the database.');
   ctx.processTypeId = binaryToUuid(processType.id);
   ctx.purposeId = binaryToUuid(purpose.id);
+
+  // A throwaway sponsorship, so completing tracks notifies only this suite's
+  // grantee, never real students of a real sponsorship.
+  const academicYear = await prisma.academicYear.findFirst();
+  if (!academicYear) throw new Error('No academicYear rows — run npm run prisma-seed.');
+  const now = new Date();
+  const sponsorship = await prisma.sponsorship.create({
+    data: {
+      name: `E2E DTS Sponsorship ${STAMP}`,
+      sponsor_id: admin.id, coordinator_id: admin.id, academic_year_id: academicYear.id,
+      duration_from: now, duration_to: new Date(now.getTime() + 365 * 86400000),
+      batch_number: STAMP % 100000, limit: 10, slot: 10, fund_allocation: 100000,
+      status: 'active', created_by: admin.id, updated_by: admin.id,
+    },
+  });
   ctx.sponsorshipId = binaryToUuid(sponsorship.id);
 
   await createUser('coordinator', 'Financial Assistance Coordinator');
   for (const key of ['accounting', 'accounting2', 'treasury', 'budget']) await createUser(key, 'DTS Officer');
+
+  // Students: one grantee of the sponsorship, one with no grant.
+  for (const key of ['grantee', 'student']) {
+    await createUser(key, 'Student');
+    const student = await prisma.student.create({
+      data: { user_id: uuidToBinary(actors[key].id), first_name: `E2E ${key}`, last_name: `DTS${STAMP}` },
+    });
+    if (key === 'grantee') {
+      await prisma.sponsorshipApplication.create({
+        data: {
+          app_id: `E2E-DTS-${STAMP}`, student_id: student.id, sponsorship_id: sponsorship.id,
+          application_stage: 'FINAS_PROPER', application_status: 'AWARDED',
+          created_by: admin.id, updated_by: admin.id,
+        },
+      });
+    }
+  }
 });
 
 afterAll(async () => {
@@ -139,8 +169,13 @@ afterAll(async () => {
     // Test-data teardown only: the application itself never deletes history.
     await prisma.dtsTrackHistory.deleteMany({ where: { track_id: { in: trackIds } } });
     await prisma.dtsTrack.deleteMany({ where: { id: { in: trackIds } } });
+    if (ctx.sponsorshipId) {
+      await prisma.sponsorshipApplication.deleteMany({ where: { sponsorship_id: uuidToBinary(ctx.sponsorshipId) } });
+    }
+    await prisma.student.deleteMany({ where: { user_id: { in: userIds } } });
     await prisma.notification.deleteMany({ where: { user_id: { in: userIds } } });
     await prisma.user.deleteMany({ where: { id: { in: userIds } } });
+    if (ctx.sponsorshipId) await prisma.sponsorship.deleteMany({ where: { id: uuidToBinary(ctx.sponsorshipId) } });
     if (ctx.setupId) await prisma.dtsPurpose.deleteMany({ where: { id: uuidToBinary(ctx.setupId) } });
   } finally {
     await prisma.$disconnect();
@@ -424,6 +459,38 @@ describe('E2E: Document Tracking System (real DB)', () => {
   });
 
   // ------------------------------------------------------------ concurrency (real row locks)
+
+  // ------------------------------------------------------------ students (grantees)
+
+  it('22a) a grantee sees the track read-only, without remarks or staff names', async () => {
+    const res = await as('grantee')(request(app).get(`${BASE}/${ctx.trackId}`));
+    expect(res.status).toBe(200);
+    const v = res.body.data;
+    expect(v).toMatchObject({ status: 'DONE', createdBy: null, allowedActions: [] });
+    expect(v.history).toHaveLength(11);
+    expect(v.history.every((h: any) => h.remarks === null && h.actor === null)).toBe(true);
+    expect(v.history.map((h: any) => h.fromOffice)).toContain('Treasury Office');
+    expect(JSON.stringify(v)).not.toContain('Missing signatures');
+
+    const list = await as('grantee')(request(app).get(BASE).query({ search: ctx.trackNumber }));
+    expect(list.body.data.data.map((t: any) => t.id)).toContain(ctx.trackId);
+
+    expect((await act('grantee', 'accept')).status).toBe(400);
+  });
+
+  it('22b) a student without a grant in that sponsorship cannot see it', async () => {
+    expect((await as('student')(request(app).get(`${BASE}/${ctx.trackId}`))).status).toBe(400);
+    const list = await as('student')(request(app).get(BASE));
+    expect(list.status).toBe(200);
+    expect(list.body.data.data.map((t: any) => t.id)).not.toContain(ctx.trackId);
+  });
+
+  it('22c) the grantee was notified once, on completion', async () => {
+    const rows = await prisma.notification.findMany({ where: { user_id: uuidToBinary(actors.grantee.id), type: 'document' } });
+    expect(rows).toHaveLength(1);
+    expect(rows[0].title).toBe('Document processing completed');
+    expect(rows[0].message).toContain(ctx.trackNumber);
+  });
 
   it('23) two simultaneous accepts: exactly one wins, one history row', async () => {
     const created = await as('coordinator')(request(app).post(BASE)).send(trackBody({ submit: true, title: `E2E race ${STAMP}` }));

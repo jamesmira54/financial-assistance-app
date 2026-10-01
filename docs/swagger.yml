@@ -4551,6 +4551,11 @@ components:
             example: example.jpeg
         targetMunicipalitys:
           type: array
+          description: >
+            Optional. City/municipality ids the announcement targets. Omit or send an empty
+            array to target every municipality. On update the list is replaced, so omitting
+            it clears any previously saved municipalities. As multipart form data, send a
+            JSON string, e.g. "[1, 2]".
           items:
             type: integer
             example: 1
@@ -4608,6 +4613,12 @@ components:
                   sponsorshipId:
                     type: string
                     example: fa8d0ba7-3bd8-4a30-8127-82ca571d1bd0
+                  date_posted:
+                    type: string
+                    format: date-time
+                    nullable: true
+                    description: When the announcement was created (created_at)
+                    example: "2026-04-27T00:01:33.000Z"
     AnnouncementSuccessGetResponse:
       type: object
       properties:

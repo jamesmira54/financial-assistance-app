@@ -8,10 +8,13 @@
  *        dts.accounting   DTS Officer                       Accounting Office
  *        dts.treasury     DTS Officer                       Treasury Office
  *        dts.budget       DTS Officer                       Budget Office       (outsider)
+ *        dts.student      Student                           (none)              (grantee: read-only view)
  *      all with password "password123"
  *   2. prints a ready-to-use bearer token for each (plus the seeded admin), valid 30 days
- *   3. prints the IDs you need in request bodies: offices, a process type, a purpose,
- *      and an active sponsorship
+ *   3. creates/reuses a "DTS Test Sponsorship" with dts.student as an AWARDED grantee,
+ *      so completing test tracks notifies only the test student, never real grantees
+ *   4. prints the IDs you need in request bodies: offices, a process type, a purpose,
+ *      and the test sponsorship
  *
  * RUN:           npm run dts-test-setup
  * RESET TRACKS:  npm run dts-test-setup -- --reset
@@ -37,7 +40,9 @@ const ACCOUNTS = [
   { key: "accounting", role: "DTS Officer", office: "Accounting Office", first: "Ana", last: "Accounting" },
   { key: "treasury", role: "DTS Officer", office: "Treasury Office", first: "Tomas", last: "Treasury" },
   { key: "budget", role: "DTS Officer", office: "Budget Office", first: "Bea", last: "Budget" },
+  { key: "student", role: "Student", office: null, first: "Sofia", last: "Student" },
 ];
+const TEST_SPONSORSHIP = "DTS Test Sponsorship";
 
 const fail = (msg: string): never => {
   throw new Error(msg);
@@ -54,17 +59,34 @@ async function main() {
 
   const processType = await prisma.dtsProcessType.findFirst({ where: { record_status: true, is_active: true }, orderBy: { sort_order: "asc" } });
   const purpose = await prisma.dtsPurpose.findFirst({ where: { record_status: true, is_active: true }, orderBy: { sort_order: "asc" } });
-  const sponsorship = await prisma.sponsorship.findFirst({ where: { record_status: true }, orderBy: { created_at: "desc" } });
   if (!processType || !purpose) fail("No DTS process types/purposes — run `npm run prisma-dts` first.");
-  if (!sponsorship) fail("No active sponsorship in the database — create one first.");
 
-  const admin = await prisma.user.findFirst({ where: { email: "admin@gmail.com" } });
+  const admin = (await prisma.user.findFirst({ where: { email: "admin@gmail.com" } })) || fail("Seed user admin@gmail.com not found.");
   const hash = await bcrypt.hash(PASSWORD, 10);
 
+  // A dedicated sponsorship, so marking test tracks Done notifies only dts.student.
+  let sponsorship = await prisma.sponsorship.findFirst({ where: { name: TEST_SPONSORSHIP, record_status: true } });
+  if (!sponsorship) {
+    const academicYear = (await prisma.academicYear.findFirst()) || fail("No academic year found — run `npm run prisma-seed`.");
+    const now = new Date();
+    sponsorship = await prisma.sponsorship.create({
+      data: {
+        name: TEST_SPONSORSHIP,
+        sponsor_id: admin.id, coordinator_id: admin.id, academic_year_id: academicYear.id,
+        duration_from: now, duration_to: new Date(now.getTime() + 365 * 86400000),
+        batch_number: 1, limit: 10, slot: 10, fund_allocation: 100000,
+        status: "active", created_by: admin.id, updated_by: admin.id,
+      },
+    });
+  }
+
   const results: { key: string; username: string; userId: string; office: string; token: string }[] = [];
+  let studentUserId: Uint8Array<ArrayBuffer> | null = null;
   for (const a of ACCOUNTS) {
     const role = (await prisma.role.findUnique({ where: { name: a.role } })) || fail(`Role "${a.role}" not found — run the seeders.`);
-    const office = officeByName.get(a.office) || fail(`DTS office "${a.office}" not found — run \`npm run prisma-dts\`.`);
+    const office = a.office
+      ? officeByName.get(a.office) || fail(`DTS office "${a.office}" not found — run \`npm run prisma-dts\`.`)
+      : null;
     const email = `dts.${a.key}@example.com`;
     const username = `dts.${a.key}`;
 
@@ -76,7 +98,7 @@ async function main() {
       mobile_number: "09170000000",
       password: hash,
       record_status: true,
-      dts_office_id: office.id,
+      dts_office_id: office?.id ?? null,
     };
     const existing = await prisma.user.findFirst({ where: { email } });
     const user = existing
@@ -84,7 +106,30 @@ async function main() {
       : await prisma.user.create({ data: { ...data, email } });
 
     const userId = binaryToUuid(user.id);
-    results.push({ key: a.key, username, userId, office: a.office, token: sign(email, userId) });
+    if (a.key === "student") studentUserId = user.id;
+    results.push({ key: a.key, username, userId, office: a.office ?? `grantee of ${TEST_SPONSORSHIP}`, token: sign(email, userId) });
+  }
+
+  // dts.student: a student record with an AWARDED application in the test sponsorship.
+  const student =
+    (await prisma.student.findFirst({ where: { user_id: studentUserId! } })) ||
+    (await prisma.student.create({ data: { user_id: studentUserId!, first_name: "Sofia", last_name: "Student" } }));
+  const application = await prisma.sponsorshipApplication.findFirst({
+    where: { student_id: student.id, sponsorship_id: sponsorship.id },
+  });
+  if (application) {
+    await prisma.sponsorshipApplication.update({
+      where: { id: application.id },
+      data: { application_stage: "FINAS_PROPER", application_status: "AWARDED", record_status: true },
+    });
+  } else {
+    await prisma.sponsorshipApplication.create({
+      data: {
+        app_id: "DTS-TEST-STUDENT", student_id: student.id, sponsorship_id: sponsorship.id,
+        application_stage: "FINAS_PROPER", application_status: "AWARDED",
+        created_by: admin.id, updated_by: admin.id,
+      },
+    });
   }
 
   if (RESET) {
@@ -103,7 +148,7 @@ async function main() {
   console.log(`\n${line}\nDTS TEST SETUP READY   base URL: http://localhost:${process.env.PORT || 8000}/api/v1\n${line}`);
 
   console.log("\nACCOUNTS (password for all: password123)\n");
-  for (const r of results) console.log(`  ${r.username.padEnd(17)} ${r.office.padEnd(20)} userId ${r.userId}`);
+  for (const r of results) console.log(`  ${r.username.padEnd(17)} ${r.office.padEnd(34)} userId ${r.userId}`);
 
   console.log(`\nIDS FOR REQUEST BODIES\n`);
   console.log(`  processTypeId   ${binaryToUuid(processType!.id)}   (${processType!.name})`);

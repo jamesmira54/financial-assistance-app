@@ -80,11 +80,24 @@ describe('public listing filters', () => {
     ]);
   });
 
-  it('filters announcements by city/municipality location', async () => {
+  it('filters announcements by city/municipality location, including untargeted ones', async () => {
     await request(app).get('/api/v1/public/announcements').query({ cityMunId: 42 });
 
     const where = __mockPrisma.announcement.findMany.mock.calls[0][0].where;
-    expect(where.locations).toEqual({ some: { citymun_id: 42 } });
+    expect(where.AND).toEqual([{
+      OR: [
+        { locations: { some: { citymun_id: 42 } } },
+        { locations: { none: {} } },
+      ],
+    }]);
+  });
+
+  it('keeps the search OR and the municipality filter independent', async () => {
+    await request(app).get('/api/v1/public/announcements').query({ cityMunId: 42, search: 'flood' });
+
+    const where = __mockPrisma.announcement.findMany.mock.calls[0][0].where;
+    expect(where.OR).toHaveLength(3);
+    expect(where.AND[0].OR).toHaveLength(2);
   });
 
   it('orders announcements ascending when sort=asc', async () => {
